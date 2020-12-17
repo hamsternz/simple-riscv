@@ -33,7 +33,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
-
+use work.cpu_constants.ALL;
 
 entity result_bus_mux is
     port ( res_src          : in  STD_LOGIC_VECTOR( 1 downto 0);
@@ -45,12 +45,6 @@ entity result_bus_mux is
 end entity;
 
 architecture Behavioral of result_bus_mux is
-   -- Selction of what is going to the reginster file
-   -- Selction of what is going to the reginster file
-   constant RESULT_ALU                 : STD_LOGIC_VECTOR(1 downto 0) := "00";
-   constant RESULT_SHIFTER             : STD_LOGIC_VECTOR(1 downto 0) := "01";
-   constant RESULT_MEMORY              : STD_LOGIC_VECTOR(1 downto 0) := "10";
-   constant RESULT_PC_PLUS_4           : STD_LOGIC_VECTOR(1 downto 0) := "11";
    signal aux : std_logic_vector(31 downto 0);
 begin
 

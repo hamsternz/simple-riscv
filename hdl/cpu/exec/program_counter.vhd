@@ -34,6 +34,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
 
+use work.cpu_constants.ALL;
 
 entity program_counter is
     port ( clk                : in  STD_LOGIC; 
@@ -55,24 +56,6 @@ end entity;
 architecture Behavioral of program_counter is
    signal current_pc   : unsigned(31 downto 0) := x"EFFFFFF0";
    signal next_instr   : unsigned(31 downto 0);
---   signal test_is_true : STD_LOGIC;
-   
-   constant PC_JMP_RELATIVE             : STD_LOGIC_VECTOR(1 downto 0) := "00";
-   constant PC_JMP_REG_RELATIVE         : STD_LOGIC_VECTOR(1 downto 0) := "01";
-   constant PC_JMP_RELATIVE_CONDITIONAL : STD_LOGIC_VECTOR(1 downto 0) := "10";
-   constant PC_RESET_STATE              : STD_LOGIC_VECTOR(1 downto 0) := "11";
-
-   constant BRANCH_TEST_EQ                     : STD_LOGIC_VECTOR(2 downto 0) := "000";
-   constant BRANCH_TEST_NE                     : STD_LOGIC_VECTOR(2 downto 0) := "001";
-   constant BRANCH_TEST_TRUE                   : STD_LOGIC_VECTOR(2 downto 0) := "010";
-   constant BRANCH_TEST_FALSE                  : STD_LOGIC_VECTOR(2 downto 0) := "011";
-   constant BRANCH_TEST_LT                     : STD_LOGIC_VECTOR(2 downto 0) := "100";
-   constant BRANCH_TEST_GE                     : STD_LOGIC_VECTOR(2 downto 0) := "101";
-   constant BRANCH_TEST_LTU                    : STD_LOGIC_VECTOR(2 downto 0) := "110";
-   constant BRANCH_TEST_GEU                    : STD_LOGIC_VECTOR(2 downto 0) := "111";
-
-   constant RESET_VECTOR                       : STD_LOGIC_VECTOR(31 downto 0) := x"F0000000";
-
 begin
     jump_complete <= jump_active;
     pc           <= std_logic_vector(current_pc);

@@ -34,6 +34,8 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
 
+use work.cpu_constants.ALL;
+
 entity alu is
   port ( alu_mode        : in  STD_LOGIC_VECTOR(2 downto 0);
          alu_active      : in  STD_LOGIC;  
@@ -44,16 +46,6 @@ entity alu is
 end entity;
 
 architecture Behavioral of alu is
-   -- Must agree with decode.vhd
-   -- Logical and addition functions
-   constant ALU_OR                   : STD_LOGIC_VECTOR(2 downto 0) := "000";
-   constant ALU_AND                  : STD_LOGIC_VECTOR(2 downto 0) := "001";
-   constant ALU_XOR                  : STD_LOGIC_VECTOR(2 downto 0) := "010";
-   constant ALU_UNUSED               : STD_LOGIC_VECTOR(2 downto 0) := "011";
-   constant ALU_ADD                  : STD_LOGIC_VECTOR(2 downto 0) := "100";
-   constant ALU_SUB                  : STD_LOGIC_VECTOR(2 downto 0) := "101";
-   constant ALU_LESS_THAN_SIGNED     : STD_LOGIC_VECTOR(2 downto 0) := "110";
-   constant ALU_LESS_THAN_UNSIGNED   : STD_LOGIC_VECTOR(2 downto 0) := "111";
 begin
    alu_complete <= alu_active;
    

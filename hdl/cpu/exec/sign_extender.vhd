@@ -34,6 +34,8 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
 
+use work.cpu_constants.ALL;
+
 entity sign_extender is
   port ( sign_ex_mode  : in  STD_LOGIC_VECTOR(0 downto 0);
          sign_ex_width : in  STD_LOGIC_VECTOR(1 downto 0);
@@ -42,13 +44,6 @@ entity sign_extender is
 end entity;
 
 architecture Behavioral of sign_extender is
-   -- Must agree with decode.vhd
-   constant SIGN_EX_WIDTH_B            : STD_LOGIC_VECTOR(1 downto 0) := "00";
-   constant SIGN_EX_WIDTH_H            : STD_LOGIC_VECTOR(1 downto 0) := "01";
-   constant SIGN_EX_WIDTH_W            : STD_LOGIC_VECTOR(1 downto 0) := "10";
-   constant SIGN_EX_WIDTH_X            : STD_LOGIC_VECTOR(1 downto 0) := "11";
-   constant SIGN_EX_SIGNED             : STD_LOGIC_VECTOR(0 downto 0) := "0";
-   constant SIGN_EX_UNSIGNED           : STD_LOGIC_VECTOR(0 downto 0) := "1";
    signal padding : STD_LOGIC_VECTOR(31 downto 8);
 begin
 

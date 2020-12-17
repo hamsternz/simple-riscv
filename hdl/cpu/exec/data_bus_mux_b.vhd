@@ -33,7 +33,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
-
+use work.cpu_constants.ALL;
 
 entity data_bus_mux_b is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
@@ -44,9 +44,6 @@ entity data_bus_mux_b is
 end entity;
 
 architecture Behavioral of data_bus_mux_b is
-   -- MUXing for the B data bus - must agree with decode.vhd   
-   constant B_BUS_REGISTER              : STD_LOGIC_VECTOR(0 downto 0) := "0";
-   constant B_BUS_IMMEDIATE             : STD_LOGIC_VECTOR(0 downto 0) := "1";
 begin
 
 process(bus_select, reg_read_port, immedediate, zero) 

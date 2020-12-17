@@ -32,6 +32,7 @@
 --############################################################################### 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.cpu_constants.ALL;
 
 entity shifter is
   port ( shift_mode      : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
@@ -44,11 +45,6 @@ end entity;
 
 architecture Behavioral of shifter is
    -- Must agree with decode.vhd
-   constant SHIFTER_LEFT_LOGICAL        : STD_LOGIC_VECTOR(1 downto 0) := "00";
-   constant SHIFTER_LEFT_ARITH          : STD_LOGIC_VECTOR(1 downto 0) := "01";  -- not used
-   constant SHIFTER_RIGHT_LOGICAL       : STD_LOGIC_VECTOR(1 downto 0) := "10";
-   constant SHIFTER_RIGHT_ARITH         : STD_LOGIC_VECTOR(1 downto 0) := "11";
-   
    signal padding : std_logic_vector(15 downto 0);
 begin
     shift_complete <= shift_active;
