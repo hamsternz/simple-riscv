@@ -13,4 +13,4 @@ Thsi is a follow on from Rudi-RV32I, a single-stage design. The more advanced de
 
 ## Current features
 - RV32I instruction support
-- Most instructions are single cycle (except jumps and load/store)
+- Most instructions are single cycle (except jumps due to pipeline flush and load/store due to memory stalls)
