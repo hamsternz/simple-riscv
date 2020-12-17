@@ -1,5 +1,5 @@
 --###############################################################################
---# ./hdl/cpu/exec/cpu.vhd  - DESCRIPTION_NEEDED
+--# ./hdl/cpu/riscv_cpu.vhd  - DESCRIPTION_NEEDED
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -34,7 +34,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity cpu is
+entity riscv_cpu is
     Port( clk     : in  STD_LOGIC;
           progmem_addr       : out STD_LOGIC_VECTOR(31 downto 0);
           progmem_enable     : out STD_LOGIC;
@@ -56,9 +56,9 @@ entity cpu is
           debug_sel     : in  STD_LOGIC_VECTOR(4 downto 0);
           debug_data    : out STD_LOGIC_VECTOR(31 downto 0)
   );
-end cpu;
+end riscv_cpu;
 
-architecture Behavioral of cpu is
+architecture Behavioral of riscv_cpu is
     component fetch_unit is
     Port ( clk                 : in  STD_LOGIC;
            -- from the exec unit

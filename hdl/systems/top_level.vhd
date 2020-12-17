@@ -49,7 +49,7 @@ architecture Behavioral of top_level is
 --    signal debug_data   : STD_LOGIC_VECTOR(31 downto 0);
 --    signal debug_pc     : STD_LOGIC_VECTOR(31 downto 0);
 
-    component cpu is
+    component riscv_cpu is
     Port( clk     : in  STD_LOGIC;
           progmem_enable     : out STD_LOGIC;
           progmem_addr       : out STD_LOGIC_VECTOR(31 downto 0);
@@ -70,8 +70,8 @@ architecture Behavioral of top_level is
           debug_pc      : out STD_LOGIC_VECTOR(31 downto 0);
           debug_sel     : in  STD_LOGIC_VECTOR(4 downto 0);
           debug_data    : out STD_LOGIC_VECTOR(31 downto 0)
-  );
-  end component;
+    );
+    end component;
 
     signal progmem_enable     : STD_LOGIC;
     signal progmem_addr       : STD_LOGIC_VECTOR(31 downto 0);
@@ -201,7 +201,7 @@ process(clk)
       end if;
    end process;
 
-i_riscv_cpu: cpu port map(
+i_riscv_cpu: riscv_cpu port map(
        clk            => clk,
        reset          => reset_sr(0),
        
