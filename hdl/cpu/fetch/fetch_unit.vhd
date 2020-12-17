@@ -48,7 +48,7 @@ entity fetch_unit is
            progmem_addr        : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
            progmem_data_addr   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
            progmem_data        : in  STD_LOGIC_VECTOR (31 downto 0);
-		   progmem_data_valid  : in  STD_LOGIC
+           progmem_data_valid  : in  STD_LOGIC
    );
 end fetch_unit;
 
@@ -66,95 +66,100 @@ architecture Behavioral of fetch_unit is
    signal flush_addr     : std_logic_vector(31 downto 0) := (others => '1');
 
 begin
+----------------------------------------------------------------
+-- This is a steaming pile of goo, and needs to be re-written
+-- from scratch
+----------------------------------------------------------------
    fetch_opcode <= pending_opcode;
    fetch_addr   <= pending_addr;
+
 process(clk) 
     begin
         if rising_edge(clk) then
-			progmem_enable <= '0';
-			if exec_completed = '1' then
-			    --------------------------------------------------
-				-- Instruction completed - Move everything forward
-				--------------------------------------------------
-				if fetched_valid = '1' then
-					pending_addr   <= fetched_addr;
-					pending_opcode <= fetched_opcode;
-					pending_valid  <= '1';
-					if progmem_data_valid = '1' then
-						fetched_addr   <= progmem_data_addr;
-						fetched_opcode <= progmem_data;					
-						fetched_valid  <= '1';
-					else
-						fetched_valid <= '0';
-					end if;
-				elsif progmem_data_valid = '1' then
-					pending_addr   <= progmem_data_addr;
-					pending_opcode <= progmem_data;					
-					pending_valid  <= '1';
-				else
-					-- Don't have a valid instruction to move in
-				end if;
-				-- In all cases a read of an instruction is needed
-				progmem_addr   <= std_logic_vector(next_addr);
-				progmem_enable <= '1';
-			    next_addr      <= next_addr+4;
-				
-			elsif exec_flush_required = '1' then
-			    -------------------------
-				-- Instruction miss
-				-------------------------
-				if pending_addr = exec_current_pc then
-				    ---------------------------------------------------------
-					-- The required instruction is already pending decode.
-					-- Por example skipping ove an instruction
-				    ---------------------------------------------------------
-					pending_addr   <= fetched_addr;
-					pending_opcode <= fetched_opcode;
-					pending_valid  <= fetched_valid;
-					
-					if progmem_data_valid = '1' then
-						fetched_addr   <= progmem_data_addr;
-						fetched_opcode <= progmem_data;					
-						fetched_valid  <= '1';
-					else
-						fetched_valid  <= '0';
-					end if;
-					--- Issue request
- 					progmem_addr   <= std_logic_vector(next_addr);
-					progmem_enable <= '1';
-					next_addr      <= next_addr+4;
-
-				elsif fetched_valid = '1' and fetched_addr = exec_current_pc then
-				    ---------------------------------------------------------
-					-- The required instruction is already fetched.
-				    ---------------------------------------------------------
-					pending_addr   <= fetched_addr;
-					pending_opcode <= fetched_opcode;
-					pending_valid  <= fetched_valid;
-					if progmem_data_valid = '1' then
-						fetched_addr   <= progmem_data_addr;
-						fetched_opcode <= progmem_data;					
-						fetched_valid  <= '1';
-					else
-						fetched_valid  <= '0';
-					end if;
-					--- Issue request
-					progmem_addr   <= std_logic_vector(next_addr);
-					progmem_enable <= '1';
-					next_addr      <= next_addr+4;
-				elsif progmem_data_valid = '1' and progmem_data_addr = exec_current_pc then
-					pending_addr   <= progmem_data_addr;
-                    pending_opcode <= progmem_data;
+            progmem_enable <= '0';
+            if exec_completed = '1' then
+                --------------------------------------------------
+                -- Instruction completed - Move everything forward
+                --------------------------------------------------
+                if fetched_valid = '1' then
+                    pending_addr   <= fetched_addr;
+                    pending_opcode <= fetched_opcode;
                     pending_valid  <= '1';
-					--- Issue request
-					progmem_addr   <= std_logic_vector(next_addr);
+                    if progmem_data_valid = '1' then
+                        fetched_addr   <= progmem_data_addr;
+                        fetched_opcode <= progmem_data;                    
+                        fetched_valid  <= '1';
+                    else
+                        fetched_valid <= '0';
+                    end if;
+                elsif progmem_data_valid = '1' then
+                    pending_addr   <= progmem_data_addr;
+                    pending_opcode <= progmem_data;                    
+                    pending_valid  <= '1';
+                else
+                    -- Don't have a valid instruction to move in
+                end if;
+                -- In all cases a read of an instruction is needed
+                progmem_addr   <= std_logic_vector(next_addr);
+                progmem_enable <= '1';
+                next_addr      <= next_addr+4;
+                
+            elsif exec_flush_required = '1' then
+                -------------------------
+                -- Instruction miss
+                -------------------------
+                if pending_addr = exec_current_pc then
+                    ---------------------------------------------------------
+                    -- The required instruction is already pending decode.
+                    -- Por example skipping ove an instruction
+                    ---------------------------------------------------------
+                    pending_addr   <= fetched_addr;
+                    pending_opcode <= fetched_opcode;
+                    pending_valid  <= fetched_valid;
+                    
+                    if progmem_data_valid = '1' then
+                        fetched_addr   <= progmem_data_addr;
+                        fetched_opcode <= progmem_data;                    
+                        fetched_valid  <= '1';
+                    else
+                        fetched_valid  <= '0';
+                    end if;
+                    --- Issue request
+                     progmem_addr   <= std_logic_vector(next_addr);
                     progmem_enable <= '1';
                     next_addr      <= next_addr+4;
-				else
-				    ---------------------------------------------------------
-					-- Full miss - We don't have the instruction anywhere
-				    ---------------------------------------------------------
-					fetched_valid <= '0';
+
+                elsif fetched_valid = '1' and fetched_addr = exec_current_pc then
+                    ---------------------------------------------------------
+                    -- The required instruction is already fetched.
+                    ---------------------------------------------------------
+                    pending_addr   <= fetched_addr;
+                    pending_opcode <= fetched_opcode;
+                    pending_valid  <= fetched_valid;
+                    if progmem_data_valid = '1' then
+                        fetched_addr   <= progmem_data_addr;
+                        fetched_opcode <= progmem_data;                    
+                        fetched_valid  <= '1';
+                    else
+                        fetched_valid  <= '0';
+                    end if;
+                    --- Issue request
+                    progmem_addr   <= std_logic_vector(next_addr);
+                    progmem_enable <= '1';
+                    next_addr      <= next_addr+4;
+                elsif progmem_data_valid = '1' and progmem_data_addr = exec_current_pc then
+                    pending_addr   <= progmem_data_addr;
+                    pending_opcode <= progmem_data;
+                    pending_valid  <= '1';
+                    --- Issue request
+                    progmem_addr   <= std_logic_vector(next_addr);
+                    progmem_enable <= '1';
+                    next_addr      <= next_addr+4;
+                else
+                    ---------------------------------------------------------
+                    -- Full miss - We don't have the instruction anywhere
+                    ---------------------------------------------------------
+                    fetched_valid <= '0';
                     pending_valid <= '0';
                     if progmem_data_valid = '1' then
                         pending_addr   <= progmem_data_addr;
@@ -164,28 +169,28 @@ process(clk)
                                         
                     --- Issue request for new instruction
                     if flush_addr /= exec_current_pc then                     
-					    progmem_addr   <= exec_current_pc;
-					    progmem_enable <= '1';
+                        progmem_addr   <= exec_current_pc;
+                        progmem_enable <= '1';
                         next_addr      <= unsigned(exec_current_pc)+4;
                         flush_addr <= exec_current_pc;
                     end if;
-				end if;
-			else  -- Note exec_completed & exec_flush_required will not be asserted at the same time
-			    -------------------------
-				-- No instruction is being consumed.
-			    -------------------------
-				if fetched_valid = '0' then
-					if progmem_data_valid = '1' then
-						fetched_addr   <= progmem_data_addr;
-						fetched_valid  <= '1';
-						fetched_opcode <= progmem_data;					
-					else 
-						progmem_addr   <= std_logic_vector(next_addr);
-						progmem_enable <= '1';
-						next_addr      <= next_addr+4;
-					end if;
-				end if;
-			end if;
+                end if;
+            else  -- Note exec_completed & exec_flush_required will not be asserted at the same time
+                -------------------------
+                -- No instruction is being consumed.
+                -------------------------
+                if fetched_valid = '0' then
+                    if progmem_data_valid = '1' then
+                        fetched_addr   <= progmem_data_addr;
+                        fetched_valid  <= '1';
+                        fetched_opcode <= progmem_data;                    
+                    else 
+                        progmem_addr   <= std_logic_vector(next_addr);
+                        progmem_enable <= '1';
+                        next_addr      <= next_addr+4;
+                    end if;
+                end if;
+            end if;
         end if;
     end process;
 end Behavioral;
