@@ -15,7 +15,7 @@ Thsi is a follow on from Rudi-RV32I, a single-stage design. The more advanced de
 - Currently in testing.
 - Can run all RV32I instructions in a test program.
 - Instruction fetch logic is very sub-optimal
-- Impleemnts at > 100MHz on Artix-7
+- Implements at > 100MHz on Artix-7
 
 ## Current features
 - RV32I instruction support
