@@ -6,11 +6,11 @@ A three-stage RISC-V CPU.
 - Decode
 - Execute
 
-Thsi is a follow on form Rudi-RV32I, a single-stage design. The more advanced design allows
+Thsi is a follow on from Rudi-RV32I, a single-stage design. The more advanced design allows
 
 - Higher performance (clock rate)
 - Addtion of more functional units (eg CSR or multiplier)
 
 ## Current features
 - RV32I instruction support
-- Most instructions are single cycle (except jumps and load/store
+- Most instructions are single cycle (except jumps and load/store)
