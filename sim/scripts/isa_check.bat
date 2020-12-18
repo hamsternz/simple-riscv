@@ -6,4 +6,4 @@ echo e.g. run:
 echo /Xilinx/Vivado/2019.2/settings64.bat
 echo.
 echo =======================================
-echo source build.tcl | vivado -mode tcl
+echo source isa_check.tcl | vivado -mode tcl

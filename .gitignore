@@ -2,3 +2,11 @@ build/basys3/.Xil
 build/basys3/bitstreams/*
 build/basys3/usage_statistics*
 build/basys3/vivado*
+build/basys3/basys3_top_level_route.dcp
+build/basys3/basys3_top_level_synth.dcp
+sim/scripts/isa_check.cache
+sim/scripts/isa_check.hw
+sim/scripts/isa_check.ip_user_files
+sim/scripts/isa_check.sim
+sim/scripts/isa_check.xpr
+sim/scripts/vivado*
