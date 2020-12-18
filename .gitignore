@@ -1,0 +1,4 @@
+build/basys3/.Xil
+build/basys3/bitstreams/*
+build/basys3/usage_statistics*
+build/basys3/vivado*
