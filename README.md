@@ -11,6 +11,16 @@ Thsi is a follow on from Rudi-RV32I, a single-stage design. The more advanced de
 - Higher performance (clock rate)
 - Addtion of more functional units (eg CSR or multiplier)
 
+## Target platform
+
+This is currently targeted at Xilinx 7-series parts, but there is no part-specific code in the design.
+
+## Building
+
+- Make user your EDA tools are set up
+- cd int the build directory for your target board
+- run "build.sh" or "build.bat" depending on your OS
+
 ## Status
 - Currently in testing.
 - Can run all RV32I instructions in a test program.
