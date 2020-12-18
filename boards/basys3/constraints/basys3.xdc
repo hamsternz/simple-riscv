@@ -1,6 +1,6 @@
 set_property PACKAGE_PIN W5 [get_ports clk]							
 set_property IOSTANDARD LVCMOS33 [get_ports clk]
-create_clock -add -name sys_clk_pin -period 9.00 -waveform {0 4.50} [get_ports clk]
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5.0} [get_ports clk]
 
 ## Button C might be used for reset
 #set_property PACKAGE_PIN U18 [get_ports btnC]						
