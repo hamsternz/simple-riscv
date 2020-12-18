@@ -10,7 +10,6 @@ read_vhdl ../../hdl/cpu/riscv_cpu.vhd
 read_vhdl ../../hdl/cpu/decode/decode_unit.vhd
 read_vhdl ../../hdl/cpu/exec/program_counter.vhd
 read_vhdl ../../hdl/cpu/exec/data_bus_mux_a.vhd
-read_vhdl ../../hdl/cpu/exec/README.md
 read_vhdl ../../hdl/cpu/exec/alu.vhd
 read_vhdl ../../hdl/cpu/exec/exec_unit.vhd
 read_vhdl ../../hdl/cpu/exec/loadstore_unit.vhd

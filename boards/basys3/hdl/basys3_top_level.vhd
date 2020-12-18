@@ -54,7 +54,7 @@ architecture Behavioral of basys3_top_level is
     end component;
 begin
 
-i_top_level: top_level: generic map ( clock_freq => 100000000) port map (
+i_top_level: top_level generic map ( clock_freq => 100000000) port map (
     clk => clk,
     uart_rxd_out => uart_rxd_out,
     uart_txd_in  => uart_txd_in,
@@ -62,4 +62,4 @@ i_top_level: top_level: generic map ( clock_freq => 100000000) port map (
     debug_data   => open,
     debug_pc     => open);
 
-end Behavioural;
+end Behavioral;
