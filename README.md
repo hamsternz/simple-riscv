@@ -17,11 +17,18 @@ This is currently targeted at Xilinx 7-series parts, but there is no part-specif
 
 ## Building
 
-- Make user your EDA tools are set up
-- cd int the build directory for your target board
+- Make user your EDA tools are set up (Vivado)
+- cd into the build directory for your target board
 - run "build.sh" or "build.bat" depending on your OS
 
-## Status
+## Simulation
+Currently you can run a a check of the basic functioning of the RV32I ISA:
+
+- Make user your EDA tools are set up (Vivado)
+- cd into the sim/scripts directory
+- run "isa_check.sh" or "isa_check.bat" depending on your OS
+
+## Project Status
 - Currently in testing.
 - Can run all RV32I instructions in a test program.
 - Instruction fetch logic is very sub-optimal
@@ -32,6 +39,6 @@ This is currently targeted at Xilinx 7-series parts, but there is no part-specif
 - Most instructions are single cycle (except jumps due to pipeline flush and load/store due to memory stalls)
 
 ## Known issues
-- Unknown instructions will halt the CPU (as no functional unit is enabled)
+- Unknown instructions will halt the CPU (as no functional unit is enabled, so no instruciton completes)
 - Unaligned memory accesses are not yet supported
-- An I-cache is required, but worked around using dual-port memory
+- An I-cache is required, but worked around using dual-port memory.
