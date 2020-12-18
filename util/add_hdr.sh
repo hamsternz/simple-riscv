@@ -38,7 +38,7 @@ add_header() {
   ) > $1
 }
 
-for fname in `find . type f -name '*.vhd'`
+for fname in `find . -type f -name '*.vhd'`
 do
   if [ "`grep 'MIT License' $fname`" = "" ]
   then

@@ -98,6 +98,7 @@ architecture Behavioral of riscv_cpu is
             decode_reset              : out STD_LOGIC := '0';
 
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
+
             decode_immed              : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             
             decode_reg_a              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
@@ -111,7 +112,6 @@ architecture Behavioral of riscv_cpu is
             decode_jump_enable        : out STD_LOGIC := '0';
             decode_pc_mode            : out STD_LOGIC_VECTOR(1 downto 0) := "00";
             decode_pc_jump_offset     : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-            decode_pc_branch_offset   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     
             decode_loadstore_enable   : out STD_LOGIC := '0';
             decode_loadstore_offset   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -152,7 +152,6 @@ architecture Behavioral of riscv_cpu is
     signal decode_jump_enable        : STD_LOGIC := '0';
     signal decode_pc_mode            : STD_LOGIC_VECTOR(1 downto 0) := "00";
     signal decode_pc_jump_offset     : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-    signal decode_pc_branch_offset   : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
     signal decode_loadstore_enable   : STD_LOGIC;
     signal decode_loadstore_offset   : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');    
@@ -192,7 +191,6 @@ architecture Behavioral of riscv_cpu is
             decode_jump_enable        : in STD_LOGIC := '0';        
             decode_pc_mode            : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
             decode_pc_jump_offset     : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-            decode_pc_branch_offset   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
         
             decode_loadstore_write    : in  STD_LOGIC;
             decode_loadstore_offset   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -282,7 +280,6 @@ decode: decode_unit port map (
         decode_jump_enable        => decode_jump_enable,
         decode_pc_mode            => decode_pc_mode,
         decode_pc_jump_offset     => decode_pc_jump_offset,
-        decode_pc_branch_offset   => decode_pc_branch_offset,
         decode_loadstore_offset   => decode_loadstore_offset,
 
         decode_loadstore_enable   => decode_loadstore_enable,
@@ -305,24 +302,23 @@ decode: decode_unit port map (
     );
 
 exec: exec_unit port map (
-        clk                   => clk,
-        -- To the exec unit
-        decode_reset          => decode_reset,
-        decode_addr           => decode_addr,
-        decode_immed          => decode_immed,         
-        
-        decode_reg_a          => decode_reg_a,
-        decode_select_a       => decode_select_a,
-        decode_zero_a         => decode_zero_a,
+        clk                       => clk,
 
-        decode_reg_b          => decode_reg_b, 
-        decode_select_b       => decode_select_b,
-        decode_zero_b         => decode_zero_b,
+        decode_reset              => decode_reset,
+        decode_addr               => decode_addr,
+        decode_immed              => decode_immed,         
+        
+        decode_reg_a              => decode_reg_a,
+        decode_select_a           => decode_select_a,
+        decode_zero_a             => decode_zero_a,
+
+        decode_reg_b              => decode_reg_b, 
+        decode_select_b           => decode_select_b,
+        decode_zero_b             => decode_zero_b,
 
         decode_jump_enable        => decode_jump_enable,
         decode_pc_mode            => decode_pc_mode,
         decode_pc_jump_offset     => decode_pc_jump_offset,
-        decode_pc_branch_offset   => decode_pc_branch_offset,
         
         decode_loadstore_offset   => decode_loadstore_offset,
         decode_loadstore_write    => decode_loadstore_write,
@@ -343,21 +339,21 @@ exec: exec_unit port map (
         decode_result_src         => decode_result_src,          
         decode_rdest              => decode_rdest,
         --===============================================    
-        exec_completed        => exec_completed,
-        exec_flush_required   => exec_flush_required,
-        exec_current_pc       => exec_current_pc,
-        
-        bus_busy      => bus_busy,
-        bus_addr      => bus_addr,
-        bus_width     => bus_width,  
-        bus_dout      => bus_dout,
-        bus_write     => bus_write,
-        bus_enable    => bus_enable,
-        bus_din       => bus_din,
-        
-        debug_pc      => debug_pc,
-        debug_sel     => debug_sel,
-        debug_data    => debug_data               
+        exec_completed            => exec_completed,
+        exec_flush_required       => exec_flush_required,
+        exec_current_pc           => exec_current_pc,
+        --===============================================    
+        bus_busy                  => bus_busy,
+        bus_addr                  => bus_addr,
+        bus_width                 => bus_width,  
+        bus_dout                  => bus_dout,
+        bus_write                 => bus_write,
+        bus_enable                => bus_enable,
+        bus_din                   => bus_din,
+        --===============================================    
+        debug_pc                  => debug_pc,
+        debug_sel                 => debug_sel,
+        debug_data                => debug_data               
     );
 
 end Behavioral;

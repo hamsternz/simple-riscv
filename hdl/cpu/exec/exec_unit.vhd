@@ -53,7 +53,6 @@ entity exec_unit is
            decode_jump_enable        : in  STD_LOGIC;
            decode_pc_mode            : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
            decode_pc_jump_offset     : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-           decode_pc_branch_offset   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
         
            decode_loadstore_enable   : in  STD_LOGIC;
            decode_loadstore_offset   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -191,11 +190,7 @@ architecture Behavioral of exec_unit is
              pc_mode          : in  STD_LOGIC_VECTOR(1 downto 0);
              take_branch      : in  STD_LOGIC;
              pc_jump_offset   : in  STD_LOGIC_VECTOR(31 downto 0);
-             pc_branch_offset : in  STD_LOGIC_VECTOR(31 downto 0);
-             pc_jumpreg_offset: in  STD_LOGIC_VECTOR(31 downto 0);
-  
              a                : in  STD_LOGIC_VECTOR(31 downto 0);
-             
              pc               : out STD_LOGIC_VECTOR(31 downto 0);
              pc_plus_four     : out STD_LOGIC_VECTOR(31 downto 0)); 
       end component;    
@@ -347,8 +342,6 @@ i_program_counter: program_counter port map (
        pc_mode          => decode_pc_mode,
        take_branch      => take_branch,
        pc_jump_offset   => decode_pc_jump_offset,
-       pc_branch_offset => decode_pc_branch_offset,
-       pc_jumpreg_offset=> decode_immed, 
        a                => reg_read_data_a,
        -- outputs
        pc           => pc,

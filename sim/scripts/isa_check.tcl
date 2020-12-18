@@ -2,7 +2,7 @@
 read_vhdl ../../hdl/systems/top_level.vhd
 
 # The CPU design
-read_vhdl ../../hdl/cpu/cpu_constants.pkg
+read_vhdl ../../hdl/cpu/cpu_constants.vhd
 read_vhdl ../../hdl/cpu/fetch/fetch_unit.vhd
 read_vhdl ../../hdl/cpu/riscv_cpu.vhd
 read_vhdl ../../hdl/cpu/decode/decode_unit.vhd

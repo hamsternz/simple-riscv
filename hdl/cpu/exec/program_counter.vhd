@@ -45,8 +45,6 @@ entity program_counter is
            pc_mode            : in  STD_LOGIC_VECTOR(1 downto 0);
            take_branch        : in  STD_LOGIC;
            pc_jump_offset     : in  STD_LOGIC_VECTOR(31 downto 0);
-           pc_branch_offset   : in  STD_LOGIC_VECTOR(31 downto 0);
-           pc_jumpreg_offset  : in  STD_LOGIC_VECTOR(31 downto 0);
            a                  : in  STD_LOGIC_VECTOR(31 downto 0);
            
            pc                 : out STD_LOGIC_VECTOR(31 downto 0);
@@ -61,17 +59,15 @@ begin
     pc           <= std_logic_vector(current_pc);
     pc_plus_four <= std_logic_vector(current_pc + 4);
 
-process(pc_mode, current_pc, a, pc_branch_offset, pc_jump_offset, take_branch)
-    variable add_LHS      : unsigned(31 downto 0);
-    variable add_RHS      : unsigned(31 downto 0);
+process(pc_mode, current_pc, a, pc_jump_offset, take_branch)
     begin
         if take_branch = '1' then
-            next_instr <= (unsigned(current_pc)  + unsigned(pc_branch_offset)) AND x"FFFFFFFC";
+            next_instr <= (unsigned(current_pc)  + unsigned(pc_jump_offset)) AND x"FFFFFFFC";
         else
             case pc_mode is
-                when PC_JMP_RELATIVE_CONDITIONAL => next_instr <= current_pc + 4;
+                when PC_JMP_RELATIVE_CONDITIONAL => next_instr <= current_pc + 4; 
                 when PC_JMP_RELATIVE             => next_instr <= (unsigned(current_pc)  + unsigned(pc_jump_offset)) AND x"FFFFFFFC";
-                when PC_JMP_REG_RELATIVE         => next_instr <= (unsigned(a)           + unsigned(pc_jumpreg_offset)) AND x"FFFFFFFC";
+                when PC_JMP_REG_RELATIVE         => next_instr <= (unsigned(a)           + unsigned(pc_jump_offset)) AND x"FFFFFFFC";
                 when PC_RESET_STATE              => next_instr <= x"F0000000";
                 when others                      => next_instr <= x"F0000000";
             end case;

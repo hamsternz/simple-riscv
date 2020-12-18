@@ -40,8 +40,8 @@ entity decode_unit is
     Port (  clk                       : in  STD_LOGIC;
             reset                     : in  STD_LOGIC;
 
-            exec_completed      : in  STD_LOGIC;
-            exec_flush_required : in  STD_LOGIC;
+            exec_completed            : in  STD_LOGIC;
+            exec_flush_required       : in  STD_LOGIC;
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
             fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -60,7 +60,6 @@ entity decode_unit is
             decode_jump_enable        : out STD_LOGIC := '0';
             decode_pc_mode            : out STD_LOGIC_VECTOR(1 downto 0) := "00";
             decode_pc_jump_offset     : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-            decode_pc_branch_offset   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
             decode_loadstore_offset   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     
             decode_loadstore_enable   : out STD_LOGIC := '0';
@@ -125,6 +124,7 @@ process(clk)
                 decode_immed             <= immed_I;
                 decode_reset             <= '0';
                 decode_alu_enable        <= '0';
+                decode_jump_enable       <= '0';
                 decode_shift_enable      <= '0';
                 decode_branchtest_enable <= '0';
         
@@ -140,8 +140,7 @@ process(clk)
                 decode_branchtest_mode <= func3;
                 decode_branchtest_enable <= '0';
         
-                decode_pc_jump_offset   <= immed_J;
-                decode_pc_branch_offset <= immed_B;
+                decode_pc_jump_offset <= immed_B;
                 if opcode(5) = '1' then
                    decode_loadstore_offset <= immed_S;
                 else
@@ -178,8 +177,8 @@ process(clk)
                        decode_rdest            <= rd;
                    ----------------- JAL  -------------------
                    when "1101111" =>
-                       -- offsets already set as defaults
-                       decode_jump_enable <= '1';
+                       decode_jump_enable      <= '1';
+                       decode_pc_jump_offset   <= immed_J;
                        decode_result_src       <= RESULT_PC_PLUS_4;
                        decode_rdest            <= rd;
                        decode_pc_mode          <= PC_JMP_RELATIVE;
@@ -187,8 +186,8 @@ process(clk)
                    ----------------- JALR -------------------
                    when "1100111" =>
                        if func3 = "000" then
-                          -- offsets already set as defaults
                           decode_jump_enable <= '1';
+                          decode_pc_jump_offset   <= immed_I;
                           decode_select_b      <= B_BUS_IMMEDIATE;
                           decode_result_src    <= RESULT_PC_PLUS_4;
                           decode_rdest         <= rd;

@@ -38,28 +38,31 @@ use IEEE.numeric_std.all;
 entity basys3_top_level is
   port ( clk          : in  STD_LOGIC;
          uart_rxd_out : out STD_LOGIC;
-         uart_txd_in  : in  STD_LOGIC);
+         uart_txd_in  : in  STD_LOGIC;
+         leds         : inout STD_LOGIC_VECTOR(15 downto 0));
 end entity;
 
 architecture Behavioral of basys3_top_level is
 
-    component top_level is
+    component top_level_expanded is
     generic ( clock_freq    : natural   := 100000000);
     port ( clk          : in  STD_LOGIC;
            uart_rxd_out : out STD_LOGIC;
            uart_txd_in  : in  STD_LOGIC;
            debug_sel    : in  STD_LOGIC_VECTOR(4 downto 0);
            debug_data   : out STD_LOGIC_VECTOR(31 downto 0);
-           debug_pc     : out STD_LOGIC_VECTOR(31 downto 0));
+           debug_pc     : out STD_LOGIC_VECTOR(31 downto 0);
+           gpio         : inout STD_LOGIC_VECTOR(15 downto 0));
     end component;
 begin
-
-i_top_level: top_level generic map ( clock_freq => 100000000) port map (
+   
+i_top_level_expanded: top_level_expanded generic map ( clock_freq => 100000000) port map (
     clk => clk,
     uart_rxd_out => uart_rxd_out,
     uart_txd_in  => uart_txd_in,
     debug_sel    => "00000",
     debug_data   => open,
-    debug_pc     => open);
+    debug_pc     => open,
+    gpio         => leds);
 
 end Behavioral;
