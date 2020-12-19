@@ -74,7 +74,8 @@ entity exec_unit is
            decode_result_src         : in  STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
            decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
           
-           exec_completed            : out STD_LOGIC                      := '0';
+           exec_instr_completed      : out STD_LOGIC                      := '0';
+           exec_instr_failed         : out STD_LOGIC                      := '0';
            exec_flush_required       : out STD_LOGIC                      := '0';
            exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
@@ -96,6 +97,7 @@ architecture Behavioral of exec_unit is
     signal pc                : STD_LOGIC_VECTOR(31 downto 0);
     signal pc_plus_four      : STD_LOGIC_VECTOR(31 downto 0);
     signal completed         : STD_LOGIC := '1';
+    signal unknown           : STD_LOGIC := '1';
     signal pc_completed      : STD_LOGIC := '1';
     signal right_instr       : STD_LOGIC := '1';
     
@@ -239,9 +241,13 @@ begin
     branchtest_active   <= right_instr and decode_branchtest_enable;
     loadstore_active    <= right_instr and decode_loadstore_enable;
     jump_active         <= right_instr and decode_jump_enable;
+    unknown             <= not(decode_alu_enable or decode_shift_enable or
+                               decode_branchtest_enable or decode_loadstore_enable or 
+                               decode_jump_enable) and right_instr;
     
-    exec_completed      <= completed;
-    exec_flush_required <= not right_instr;
+    exec_instr_completed  <= completed;
+    exec_instr_failed     <= unknown;
+    exec_flush_required   <= not right_instr;
 
     debug_pc <= pc;
     

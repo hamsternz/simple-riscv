@@ -40,7 +40,8 @@ entity decode_unit is
     Port (  clk                       : in  STD_LOGIC;
             reset                     : in  STD_LOGIC;
 
-            exec_completed            : in  STD_LOGIC;
+            exec_instr_completed      : in  STD_LOGIC;
+            exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -103,9 +104,10 @@ architecture Behavioral of decode_unit is
     signal raise_exception : STD_LOGIC;    
     signal exception       : STD_LOGIC_VECTOR(2 downto 0);
 begin
-   raise_exception <= reset;
-   exception <= EXCEPTION_RESET when reset = '1'
-                else EXCEPTION_NONE;
+   raise_exception <= reset or exec_instr_failed;
+   exception <= EXCEPTION_RESET         when reset = '1' else 
+                EXCEPTION_UNKNOWN_INSTR when exec_instr_failed = '1' else 
+                EXCEPTION_NONE;
 
    with fetch_opcode(31) select instr31 <= x"FFFFFFFF" when '1', x"00000000" when others;
 
@@ -125,7 +127,7 @@ begin
 process(clk)
     begin
         if rising_edge(clk) then
-            if exec_completed = '1' OR exec_flush_required = '1' then
+            if exec_instr_completed = '1' OR exec_flush_required = '1' then
     
                  -- Set defaults for invalid instructions
                 decode_addr              <= fetch_addr;
@@ -476,24 +478,30 @@ process(clk)
                 end case;
             end if;
 
-            ---- Now override with exceptions, traps or interrupts
-	    if raise_exception = '1' then
-		decode_force_complete     <= '1';
-                decode_jump_enable        <= '1';
-                decode_alu_enable         <= '0';
-                decode_shift_enable       <= '0';
-                decode_branchtest_enable  <= '0';
-	        decode_reg_a              <= "00000";
-	        decode_reg_b              <= "00000";
-	        decode_rdest              <= "00000";
-                decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
-                decode_pc_mode        <= PC_JMP_REG_RELATIVE;
-                case exception is 
-                    when EXCEPTION_RESET =>
-                          decode_pc_jump_offset <= x"F0000000";
-                    when others =>
-                          decode_pc_jump_offset <= x"F0000000";
-                end case;
+            -- Other than reset, only raise an exception when an
+            -- instruction completes or is stalled on fetch
+            if exec_instr_completed = '1' OR exec_flush_required = '1' OR exec_instr_failed = '1' or reset = '1' then
+                ---- Now override with exceptions, traps or interrupts
+                if raise_exception = '1' then
+                    decode_force_complete     <= '1';
+                    decode_jump_enable        <= '1';
+                    decode_alu_enable         <= '0';
+                    decode_shift_enable       <= '0';
+                    decode_branchtest_enable  <= '0';
+                    decode_reg_a              <= "00000";
+                    decode_reg_b              <= "00000";
+                    decode_rdest              <= "00000";
+                    decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
+                    decode_pc_mode            <= PC_JMP_REG_RELATIVE;
+                    case exception is 
+                        when EXCEPTION_RESET =>
+                            decode_pc_jump_offset <= x"F0000000";
+                        when EXCEPTION_UNKNOWN_INSTR =>
+                            decode_pc_jump_offset <= x"F0000000";
+                        when others =>
+                            decode_pc_jump_offset <= x"F0000000";
+                    end case;
+                end if;
             end if;
         end if;
     end process;

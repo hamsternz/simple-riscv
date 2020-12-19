@@ -90,6 +90,7 @@ package cpu_constants is
 
     constant EXCEPTION_NONE              : STD_LOGIC_VECTOR(2 downto 0) := "000";
     constant EXCEPTION_RESET             : STD_LOGIC_VECTOR(2 downto 0) := "001";
+    constant EXCEPTION_UNKNOWN_INSTR     : STD_LOGIC_VECTOR(2 downto 0) := "010";
 end package cpu_constants;
  
 package body cpu_constants is

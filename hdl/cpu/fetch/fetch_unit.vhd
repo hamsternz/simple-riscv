@@ -37,7 +37,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity fetch_unit is
     Port ( clk            : in  STD_LOGIC;
            -- from the exec unit
-           exec_completed      : in  STD_LOGIC;
+           exec_instr_completed      : in  STD_LOGIC;
            exec_flush_required : in  STD_LOGIC;
            exec_current_pc     : in  STD_LOGIC_VECTOR (31 downto 0);
            -- to the decoder
@@ -77,7 +77,7 @@ process(clk)
     begin
         if rising_edge(clk) then
             progmem_enable <= '0';
-            if exec_completed = '1' then
+            if exec_instr_completed = '1' then
                 --------------------------------------------------
                 -- Instruction completed - Move everything forward
                 --------------------------------------------------

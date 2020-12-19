@@ -62,9 +62,9 @@ architecture Behavioral of riscv_cpu is
     component fetch_unit is
     Port ( clk                 : in  STD_LOGIC;
            -- from the exec unit
-           exec_completed      : in  STD_LOGIC;
-           exec_flush_required : in  STD_LOGIC;
-           exec_current_pc     : in  STD_LOGIC_VECTOR (31 downto 0);
+           exec_instr_completed : in  STD_LOGIC;
+           exec_flush_required  : in  STD_LOGIC;
+           exec_current_pc      : in  STD_LOGIC_VECTOR (31 downto 0);
 
            -- to the decoder
            fetch_opcode        : out STD_LOGIC_VECTOR (31 downto 0);
@@ -87,8 +87,9 @@ architecture Behavioral of riscv_cpu is
     component decode_unit is
     Port (  clk                   : in  STD_LOGIC;
            -- from the exec unit
-            exec_completed      : in  STD_LOGIC;
-            exec_flush_required : in  STD_LOGIC;
+            exec_instr_completed      : in  STD_LOGIC;
+            exec_instr_failed         : in  STD_LOGIC;
+            exec_flush_required       : in  STD_LOGIC;
             -- To the exec unit
             reset                     : in  STD_LOGIC;
             -- from the fetch unit
@@ -212,9 +213,10 @@ architecture Behavioral of riscv_cpu is
             decode_result_src         : in  STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
             decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
     
-            exec_completed        : out STD_LOGIC;
-            exec_flush_required   : out STD_LOGIC;
-            exec_current_pc       : out STD_LOGIC_VECTOR (31 downto 0);
+            exec_instr_completed      : out STD_LOGIC;
+            exec_instr_failed         : out STD_LOGIC;
+            exec_flush_required       : out STD_LOGIC;
+            exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0);
 
             bus_busy      : in  STD_LOGIC;
             bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
@@ -231,9 +233,10 @@ architecture Behavioral of riscv_cpu is
     );
     end component;
 
-    signal exec_completed      : STD_LOGIC;
-    signal exec_flush_required : STD_LOGIC;
-    signal exec_current_pc     : STD_LOGIC_VECTOR (31 downto 0);
+    signal exec_instr_completed : STD_LOGIC;
+    signal exec_instr_failed    : STD_LOGIC;
+    signal exec_flush_required  : STD_LOGIC;
+    signal exec_current_pc      : STD_LOGIC_VECTOR (31 downto 0);
 
 begin
 
@@ -242,7 +245,7 @@ begin
     
 fetch: fetch_unit port map (
         clk                   => clk,
-        exec_completed        => exec_completed,
+        exec_instr_completed  => exec_instr_completed,
         exec_flush_required   => exec_flush_required,
         exec_current_pc       => exec_current_pc,
         fetch_opcode          => fetch_opcode,
@@ -259,7 +262,8 @@ decode: decode_unit port map (
         clk                   => clk,
         reset                 => reset,
 
-        exec_completed        => exec_completed,
+        exec_instr_completed  => exec_instr_completed,
+        exec_instr_failed     => exec_instr_failed,
         exec_flush_required   => exec_flush_required,
 
         fetch_opcode          => fetch_opcode,
@@ -340,7 +344,8 @@ exec: exec_unit port map (
         decode_result_src         => decode_result_src,          
         decode_rdest              => decode_rdest,
         --===============================================    
-        exec_completed            => exec_completed,
+        exec_instr_completed      => exec_instr_completed,
+        exec_instr_failed         => exec_instr_failed,
         exec_flush_required       => exec_flush_required,
         exec_current_pc           => exec_current_pc,
         --===============================================    
