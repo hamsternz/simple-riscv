@@ -37,15 +37,19 @@ use IEEE.numeric_std.all;
 use work.cpu_constants.ALL;
 
 entity sign_extender is
-  port ( sign_ex_mode  : in  STD_LOGIC_VECTOR(0 downto 0);
-         sign_ex_width : in  STD_LOGIC_VECTOR(1 downto 0);
-         a             : in  STD_LOGIC_VECTOR(31 downto 0);
-         b             : out STD_LOGIC_VECTOR(31 downto 0));
+  port ( clk              : in  STD_LOGIC;
+         sign_ex_active   : in  STD_LOGIC;
+         sign_ex_complete : out STD_LOGIC;
+         sign_ex_mode     : in  STD_LOGIC_VECTOR(0 downto 0);
+         sign_ex_width    : in  STD_LOGIC_VECTOR(1 downto 0);
+         a                : in  STD_LOGIC_VECTOR(31 downto 0);
+         b                : out STD_LOGIC_VECTOR(31 downto 0));
 end entity;
 
 architecture Behavioral of sign_extender is
    signal padding : STD_LOGIC_VECTOR(31 downto 8);
 begin
+    sign_ex_complete <= sign_ex_active;
 
 process(sign_ex_mode, sign_ex_width, a)
     begin

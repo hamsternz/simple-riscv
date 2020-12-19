@@ -63,11 +63,18 @@ end loadstore_unit;
 architecture Behavioral of loadstore_unit is
 
     component sign_extender is
-    port ( sign_ex_mode  : in  STD_LOGIC_VECTOR(0 downto 0);
-           sign_ex_width : in  STD_LOGIC_VECTOR(1 downto 0);
-           a             : in  STD_LOGIC_VECTOR(31 downto 0);
-           b             : out STD_LOGIC_VECTOR(31 downto 0));
+    port ( clk              : in  STD_LOGIC;
+           sign_ex_active   : in STD_LOGIC;  
+           sign_ex_complete : in STD_LOGIC;  
+           sign_ex_mode     : in  STD_LOGIC_VECTOR(0 downto 0);
+           sign_ex_width    : in  STD_LOGIC_VECTOR(1 downto 0);
+           a                : in  STD_LOGIC_VECTOR(31 downto 0);
+           b                : out STD_LOGIC_VECTOR(31 downto 0));
     end component;
+
+    signal sign_ex_active   : STD_LOGIC;  
+    signal sign_ex_complete : STD_LOGIC;  
+    signal sign_ex_data_in  : STD_LOGIC_VECTOR(31 downto 0);
     
 begin
     -- Set up the RAM address
@@ -76,12 +83,25 @@ begin
     bus_width          <= decode_loadstore_width;
     bus_dout           <= data_b;
     bus_addr           <= std_logic_vector(unsigned(data_a)+unsigned(decode_loadstore_offset));
-    loadstore_complete <= loadstore_active and not bus_busy;
+
+--------------------------------------------
+-- THIS COULD BE CLOCKED TO IMPROVE TIMING
+-- AT THE COST OF MEMORY READ LATENCY
+--------------------------------------------
+    sign_ex_data_in    <= bus_din;
+    sign_ex_active     <= loadstore_active and not bus_busy;
+--------------------------------------------
+-- END OF CLOCKABLE BIT
+--------------------------------------------
+    loadstore_complete <= sign_ex_complete;
 
 i_sign_extender: sign_extender  PORT MAP (
-          sign_ex_mode  => decode_loadstore_ex_mode,
-          sign_ex_width => decode_loadstore_ex_width,
-          a             => bus_din,
-          b             => loadstore_data);
+          clk              => clk,
+          sign_ex_active   => sign_ex_active,
+          sign_ex_complete => sign_ex_complete,
+          sign_ex_mode     => decode_loadstore_ex_mode,
+          sign_ex_width    => decode_loadstore_ex_width,
+          a                => sign_ex_data_in,
+          b                => loadstore_data);
 
 end Behavioral;
