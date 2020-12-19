@@ -95,7 +95,7 @@ architecture Behavioral of riscv_cpu is
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
             fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
             -- To the exec unit
-            decode_reset              : out STD_LOGIC := '0';
+            decode_force_complete     : out STD_LOGIC := '0';
 
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
 
@@ -136,7 +136,7 @@ architecture Behavioral of riscv_cpu is
             );            
     end component;    
     
-    signal decode_reset              : STD_LOGIC;
+    signal decode_force_complete     : STD_LOGIC;
 
     signal decode_addr               : STD_LOGIC_VECTOR (31 downto 0);
     signal decode_immed              : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -175,7 +175,7 @@ architecture Behavioral of riscv_cpu is
     component exec_unit is
     Port ( clk                 : in STD_LOGIC;
 
-            decode_reset              : in  STD_LOGIC;
+            decode_force_complete     : in  STD_LOGIC;
     
             decode_addr               : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             decode_immed              : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -265,7 +265,7 @@ decode: decode_unit port map (
         fetch_opcode          => fetch_opcode,
         fetch_addr            => fetch_addr,
         -- To the exec unit
-        decode_reset          => decode_reset,
+        decode_force_complete => decode_force_complete,
         decode_addr           => decode_addr,
         decode_immed          => decode_immed,         
         
@@ -304,7 +304,8 @@ decode: decode_unit port map (
 exec: exec_unit port map (
         clk                       => clk,
 
-        decode_reset              => decode_reset,
+        decode_force_complete     => decode_force_complete,
+
         decode_addr               => decode_addr,
         decode_immed              => decode_immed,         
         

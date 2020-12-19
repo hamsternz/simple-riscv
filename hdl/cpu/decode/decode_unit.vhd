@@ -1,5 +1,5 @@
 --###############################################################################
---# ./hdl/cpu/decode/decode_unit.vhd  - DESCRIPTION_NEEDED
+--# ./hdl/cpu/decode/decode_unit.vhd  - Instruction decoder
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -76,10 +76,12 @@ entity decode_unit is
 
             decode_shift_enable       : out STD_LOGIC := '0';
             decode_shift_mode         : out STD_LOGIC_VECTOR(1 downto 0) := "00";
-            decode_reset              : out STD_LOGIC := '0';
     
             decode_result_src         : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
-            decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0'));            
+            decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+
+            -- To allow interrupts to be forced
+            decode_force_complete     : out STD_LOGIC := '0');            
 end decode_unit;
 
 architecture Behavioral of decode_unit is
@@ -96,8 +98,14 @@ architecture Behavioral of decode_unit is
     signal immed_U : STD_LOGIC_VECTOR(31 downto 0);
     signal immed_J : STD_LOGIC_VECTOR(31 downto 0);
     signal instr31 : STD_LOGIC_VECTOR(31 downto 0);
-    
+
+    -- Exception handling/Interrupts
+    signal raise_exception : STD_LOGIC;    
+    signal exception       : STD_LOGIC_VECTOR(2 downto 0);
 begin
+   raise_exception <= reset;
+   exception <= EXCEPTION_RESET when reset = '1'
+                else EXCEPTION_NONE;
 
    with fetch_opcode(31) select instr31 <= x"FFFFFFFF" when '1', x"00000000" when others;
 
@@ -122,7 +130,7 @@ process(clk)
                  -- Set defaults for invalid instructions
                 decode_addr              <= fetch_addr;
                 decode_immed             <= immed_I;
-                decode_reset             <= '0';
+                decode_force_complete    <= '0';
                 decode_alu_enable        <= '0';
                 decode_jump_enable       <= '0';
                 decode_shift_enable      <= '0';
@@ -467,11 +475,25 @@ process(clk)
                      -- Undecoded for opcodes                      
                 end case;
             end if;
-            if reset = '1' then
-               decode_branchtest_enable  <= '1';
-               decode_reset              <= '1';
-               decode_pc_mode            <= PC_RESET_STATE;
-               decode_branchtest_mode    <= BRANCH_TEST_TRUE;
+
+            ---- Now override with exceptions, traps or interrupts
+	    if raise_exception = '1' then
+		decode_force_complete     <= '1';
+                decode_jump_enable        <= '1';
+                decode_alu_enable         <= '0';
+                decode_shift_enable       <= '0';
+                decode_branchtest_enable  <= '0';
+	        decode_reg_a              <= "00000";
+	        decode_reg_b              <= "00000";
+	        decode_rdest              <= "00000";
+                decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
+                decode_pc_mode        <= PC_JMP_REG_RELATIVE;
+                case exception is 
+                    when EXCEPTION_RESET =>
+                          decode_pc_jump_offset <= x"F0000000";
+                    when others =>
+                          decode_pc_jump_offset <= x"F0000000";
+                end case;
             end if;
         end if;
     end process;

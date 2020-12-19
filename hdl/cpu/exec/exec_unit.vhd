@@ -37,7 +37,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity exec_unit is
     Port ( clk                       : in STD_LOGIC;
 
-           decode_reset              : in  STD_LOGIC;
+           decode_force_complete     : in  STD_LOGIC;
     
            decode_addr               : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
            decode_immed              : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -233,7 +233,7 @@ begin
 
     right_instr         <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
     completed           <= right_instr and (alu_complete or shift_complete or branchtest_complete or jump_complete or loadstore_complete);
-    pc_completed        <= completed or decode_reset;
+    pc_completed        <= completed or decode_force_complete;
     alu_active          <= right_instr and decode_alu_enable;
     shift_active        <= right_instr and decode_shift_enable;
     branchtest_active   <= right_instr and decode_branchtest_enable;

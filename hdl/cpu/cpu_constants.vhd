@@ -46,7 +46,7 @@ package cpu_constants is
     constant PC_JMP_RELATIVE             : STD_LOGIC_VECTOR(1 downto 0) := "00";
     constant PC_JMP_REG_RELATIVE         : STD_LOGIC_VECTOR(1 downto 0) := "01";
     constant PC_JMP_RELATIVE_CONDITIONAL : STD_LOGIC_VECTOR(1 downto 0) := "10";
-    constant PC_RESET_STATE              : STD_LOGIC_VECTOR(1 downto 0) := "11";
+    constant PC_JMP_UNUSED               : STD_LOGIC_VECTOR(1 downto 0) := "11";
     
     -- Tests for conditional branching  
     constant BRANCH_TEST_EQ              : STD_LOGIC_VECTOR(2 downto 0) := "000";
@@ -87,6 +87,9 @@ package cpu_constants is
     
     constant SIGN_EX_SIGNED              : STD_LOGIC_VECTOR(0 downto 0) := "0";
     constant SIGN_EX_UNSIGNED            : STD_LOGIC_VECTOR(0 downto 0) := "1";   
+
+    constant EXCEPTION_NONE              : STD_LOGIC_VECTOR(2 downto 0) := "000";
+    constant EXCEPTION_RESET             : STD_LOGIC_VECTOR(2 downto 0) := "001";
 end package cpu_constants;
  
 package body cpu_constants is

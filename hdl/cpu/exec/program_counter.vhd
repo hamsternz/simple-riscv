@@ -65,11 +65,10 @@ process(pc_mode, current_pc, a, pc_jump_offset, take_branch)
             next_instr <= (unsigned(current_pc)  + unsigned(pc_jump_offset)) AND x"FFFFFFFC";
         else
             case pc_mode is
-                when PC_JMP_RELATIVE_CONDITIONAL => next_instr <= current_pc + 4; 
                 when PC_JMP_RELATIVE             => next_instr <= (unsigned(current_pc)  + unsigned(pc_jump_offset)) AND x"FFFFFFFC";
                 when PC_JMP_REG_RELATIVE         => next_instr <= (unsigned(a)           + unsigned(pc_jump_offset)) AND x"FFFFFFFC";
-                when PC_RESET_STATE              => next_instr <= x"F0000000";
-                when others                      => next_instr <= x"F0000000";
+                when PC_JMP_RELATIVE_CONDITIONAL => next_instr <= current_pc + 4; 
+                when others                      => next_instr <= current_pc + 4;
             end case;
         end if;
     end process;
