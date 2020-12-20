@@ -48,8 +48,12 @@ end entity;
 
 architecture Behavioral of sign_extender is
    signal padding : STD_LOGIC_VECTOR(31 downto 8);
+   signal result  : STD_LOGIC_VECTOR(31 downto 0);
 begin
+
     sign_ex_complete <= sign_ex_active;
+    b <= result;
+
 
 process(sign_ex_mode, sign_ex_width, a)
     begin
@@ -72,13 +76,13 @@ process(a, sign_ex_width, padding)
     begin
         case sign_ex_width is
             when SIGN_EX_WIDTH_B =>
-                b <= padding(31 downto  8) & a( 7 downto 0);
+                result <= padding(31 downto  8) & a( 7 downto 0);
             when SIGN_EX_WIDTH_H =>
-                b <= padding(31 downto 16) & a(15 downto 0);
+                result <= padding(31 downto 16) & a(15 downto 0);
             when SIGN_EX_WIDTH_W =>
-                b <= a;
+                result <= a;
             when others =>
-                b <= a;
+                result <= a;
         end case;
     end process;
 end Behavioral;
