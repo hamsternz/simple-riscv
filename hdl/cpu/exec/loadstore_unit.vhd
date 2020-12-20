@@ -78,8 +78,8 @@ architecture Behavioral of loadstore_unit is
     
 begin
     -- Set up the RAM address
-    bus_write          <= decode_loadstore_write and not sign_ex_active;
-    bus_enable         <= loadstore_active and not sign_ex_active;
+    bus_write          <= decode_loadstore_write;
+    bus_enable         <= loadstore_active;
     bus_width          <= decode_loadstore_width;
     bus_dout           <= data_b;
     bus_addr           <= std_logic_vector(unsigned(data_a)+unsigned(decode_loadstore_offset));
@@ -88,14 +88,9 @@ begin
 -- THIS COULD BE CLOCKED TO IMPROVE TIMING
 -- AT THE COST OF MEMORY READ LATENCY
 --------------------------------------------
-    loadstore_complete <= loadstore_active and (sign_ex_complete or ((not bus_busy) and decode_loadstore_write));
-process(clk) 
-    begin
-        if rising_edge(clk) then
-            sign_ex_data_in    <= bus_din;
-            sign_ex_active     <= loadstore_active and (not bus_busy) and not decode_loadstore_write and not sign_ex_active;
-        end if;
-    end process;
+    loadstore_complete <= sign_ex_complete;
+    sign_ex_data_in    <= bus_din;
+    sign_ex_active     <= loadstore_active and not bus_busy;
 --------------------------------------------
 -- END OF CLOCKABLE BIT
 --------------------------------------------
