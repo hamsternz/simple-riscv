@@ -36,12 +36,14 @@ use IEEE.numeric_std.all;
 use work.cpu_constants.ALL;
 
 entity branch_test is
-  port ( branchtest_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+  port ( clk                 : in STD_LOGIC;
+         branchtest_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          branchtest_active   : in  STD_LOGIC;
          branchtest_complete : out STD_LOGIC;
-         a                    : in  STD_LOGIC_VECTOR(31 downto 0);
-         b                    : in  STD_LOGIC_VECTOR(31 downto 0);       
-         take_branch          : out STD_LOGIC); 
+         branchtest_failed   : out STD_LOGIC := '0';
+         a                   : in  STD_LOGIC_VECTOR(31 downto 0);
+         b                   : in  STD_LOGIC_VECTOR(31 downto 0);       
+         take_branch         : out STD_LOGIC); 
 end entity;
 
 

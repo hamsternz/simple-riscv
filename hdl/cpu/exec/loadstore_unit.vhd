@@ -39,6 +39,7 @@ entity loadstore_unit is
 
             loadstore_active          : in  STD_LOGIC;
             loadstore_complete        : out STD_LOGIC;
+            loadstore_failed          : out STD_LOGIC;
 
             decode_loadstore_enable   : in  STD_LOGIC;
             decode_loadstore_write    : in  STD_LOGIC;

@@ -37,12 +37,14 @@ use IEEE.numeric_std.all;
 use work.cpu_constants.ALL;
 
 entity alu is
-  port ( alu_mode        : in  STD_LOGIC_VECTOR(2 downto 0);
-         alu_active      : in  STD_LOGIC;  
-         alu_complete    : out STD_LOGIC;  
-         a               : in  STD_LOGIC_VECTOR(31 downto 0);
-         b               : in  STD_LOGIC_VECTOR(31 downto 0);
-         c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+  port ( clk          : in  STD_LOGIC;  
+         alu_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         alu_active   : in  STD_LOGIC;  
+         alu_complete : out STD_LOGIC;  
+         alu_failed   : out STD_LOGIC := '0';  
+         a            : in  STD_LOGIC_VECTOR(31 downto 0);
+         b            : in  STD_LOGIC_VECTOR(31 downto 0);
+         c            : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
 end entity;
 
 architecture Behavioral of alu is

@@ -131,12 +131,16 @@ architecture Behavioral of exec_unit is
       signal a_bus                 : STD_LOGIC_VECTOR(31 downto 0);
       signal b_bus                 : STD_LOGIC_VECTOR(31 downto 0);
       signal c_bus                 : STD_LOGIC_VECTOR(31 downto 0);
+
       signal alu_active            : std_logic;
       signal alu_complete          : std_logic;
+      signal alu_failed            : std_logic;
       component alu is
-        port ( alu_mode        : in  STD_LOGIC_VECTOR(2 downto 0);
+        port ( clk             : in  STD_LOGIC;
+               alu_mode        : in  STD_LOGIC_VECTOR(2 downto 0);
                alu_active      : in  STD_LOGIC;  
                alu_complete    : out STD_LOGIC;  
+               alu_failed      : out STD_LOGIC;  
                a               : in  STD_LOGIC_VECTOR(31 downto 0);
                b               : in  STD_LOGIC_VECTOR(31 downto 0);
                c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
@@ -145,9 +149,11 @@ architecture Behavioral of exec_unit is
   
   
       component shifter is
-          port ( shift_mode     : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
+          port ( clk            : in  STD_LOGIC; 
+                 shift_mode     : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
                  shift_active   : in  STD_LOGIC;  
                  shift_complete : out STD_LOGIC;  
+                 shift_failed   : out STD_LOGIC;  
                  a              : in  STD_LOGIC_VECTOR(31 downto 0);
                  b              : in  STD_LOGIC_VECTOR(31 downto 0);
                  c              : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
@@ -155,6 +161,7 @@ architecture Behavioral of exec_unit is
       signal c_shifter         : STD_LOGIC_VECTOR(31 downto 0);
       signal shift_active      : std_logic;
       signal shift_complete    : std_logic;
+      signal shift_failed      : std_logic;
       
       component register_file is
           port ( clk              : in  STD_LOGIC;
@@ -172,23 +179,28 @@ architecture Behavioral of exec_unit is
       signal reg_read_data_b      : STD_LOGIC_VECTOR(31 downto 0); 
   
       component branch_test is
-      port ( branchtest_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
-             branchtest_active   : in  STD_LOGIC;
-             branchtest_complete : out STD_LOGIC;
+      port ( clk                  : in  STD_LOGIC; 
+             branchtest_mode      : in  STD_LOGIC_VECTOR(2 downto 0);
+             branchtest_active    : in  STD_LOGIC;
+             branchtest_complete  : out STD_LOGIC;
+             branchtest_failed    : out STD_LOGIC;
              a                    : in  STD_LOGIC_VECTOR(31 downto 0);
              b                    : in  STD_LOGIC_VECTOR(31 downto 0);
              take_branch          : out STD_LOGIC);
       end component;
       signal branchtest_active   : std_logic;
       signal branchtest_complete : std_logic;
+      signal branchtest_failed   : std_logic;
       signal take_branch          : std_logic;
       
       component program_counter is
       port ( clk              : in  STD_LOGIC; 
-             completed        : in  STD_LOGIC;
-             
+             completed        : in  STD_LOGIC; -- Has everything completed?
+
              jump_active      : in  STD_LOGIC;
              jump_complete    : out STD_LOGIC;
+             jump_failed      : out STD_LOGIC;
+
              pc_mode          : in  STD_LOGIC_VECTOR(1 downto 0);
              take_branch      : in  STD_LOGIC;
              pc_jump_offset   : in  STD_LOGIC_VECTOR(31 downto 0);
@@ -198,12 +210,14 @@ architecture Behavioral of exec_unit is
       end component;    
       signal jump_active   : std_logic;
       signal jump_complete : std_logic;
+      signal jump_failed   : std_logic;
 
     component loadstore_unit is
     Port (  clk                       : in STD_LOGIC;
 
         loadstore_active          : in  STD_LOGIC;
         loadstore_complete        : out STD_LOGIC;
+        loadstore_failed          : out STD_LOGIC;
         
         data_a                    : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
         data_b                    : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -227,6 +241,7 @@ architecture Behavioral of exec_unit is
 
     signal loadstore_active      : std_logic;
     signal loadstore_complete    : std_logic;
+    signal loadstore_failed      : std_logic;
     signal loadstore_data        : STD_LOGIC_VECTOR(31 downto 0);
 
 begin
@@ -246,24 +261,28 @@ begin
                                decode_jump_enable) and right_instr;
     
     exec_instr_completed  <= completed;
-    exec_instr_failed     <= unknown;
+    exec_instr_failed     <= unknown or alu_failed or shift_failed or branchtest_failed or jump_failed or loadstore_failed;
     exec_flush_required   <= not right_instr;
 
     debug_pc <= pc;
     
     
 i_alu: alu port map (
+      clk             => clk,
       alu_mode        => decode_alu_mode,
       alu_active      => alu_active,
       alu_complete    => alu_complete,
+      alu_failed      => alu_failed,  
       a               => a_bus,
       b               => b_bus,
       c               => c_alu); 
 
 i_shifter: shifter port map (
+      clk             => clk,
       shift_mode      => decode_shift_mode,
       shift_active    => shift_active,
       shift_complete  => shift_complete,
+      shift_failed    => shift_failed,
       a               => reg_read_data_a, --a_bus,
       b               => b_bus,
       c               => c_shifter); 
@@ -305,9 +324,12 @@ i_data_bus_mux_b: data_bus_mux_b port map (
       data_bus       => b_bus); 
 
 i_branchtest: branch_test port map (
+       clk                 => clk,
+      
        branchtest_mode     => decode_branchtest_mode,
        branchtest_active   => branchtest_active,
        branchtest_complete => branchtest_complete,
+       branchtest_failed   => branchtest_failed,
        a                   => reg_read_data_a,
        b                   => reg_read_data_b,
        take_branch         => take_branch);
@@ -317,6 +339,7 @@ i_loadstore: loadstore_unit port map (
 
         loadstore_active          => loadstore_active,
         loadstore_complete        => loadstore_complete,
+        loadstore_failed          => loadstore_failed,
         
         data_a                    => reg_read_data_a,
         data_b                    => reg_read_data_b,
@@ -344,6 +367,7 @@ i_program_counter: program_counter port map (
        
        jump_active      => jump_active,
        jump_complete    => jump_complete,
+       jump_failed      => jump_failed,
        
        pc_mode          => decode_pc_mode,
        take_branch      => take_branch,

@@ -42,6 +42,7 @@ entity program_counter is
 
            jump_active        : in  STD_LOGIC;
            jump_complete      : out STD_LOGIC;
+           jump_failed        : out STD_LOGIC;
            pc_mode            : in  STD_LOGIC_VECTOR(1 downto 0);
            take_branch        : in  STD_LOGIC;
            pc_jump_offset     : in  STD_LOGIC_VECTOR(31 downto 0);

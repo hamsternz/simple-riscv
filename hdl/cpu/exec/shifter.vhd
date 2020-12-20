@@ -35,9 +35,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 use work.cpu_constants.ALL;
 
 entity shifter is
-  port ( shift_mode      : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
+  port ( clk             : in  STD_LOGIC;
+         shift_mode      : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
          shift_active    : in  STD_LOGIC;  
          shift_complete  : out STD_LOGIC;  
+         shift_failed    : out STD_LOGIC := '0';  
          a               : in  STD_LOGIC_VECTOR(31 downto 0);
          b               : in  STD_LOGIC_VECTOR(31 downto 0);
          c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
