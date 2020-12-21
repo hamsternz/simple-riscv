@@ -44,11 +44,9 @@ entity exec_unit is
             
            decode_reg_a              : in  STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
            decode_select_a           : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-           decode_zero_a             : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
         
            decode_reg_b              : in  STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
            decode_select_b           : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-           decode_zero_b             : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
         
            decode_jump_enable        : in  STD_LOGIC;
            decode_pc_mode            : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
@@ -103,17 +101,15 @@ architecture Behavioral of exec_unit is
     
     component data_bus_mux_a is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
-             zero           : in  STD_LOGIC_VECTOR( 0 downto 0);
-             reg_read_port  : in  STD_LOGIC_VECTOR(31 downto 0);
-             pc             : in  STD_LOGIC_VECTOR(31 downto 0);
-             data_bus       : out STD_LOGIC_VECTOR(31 downto 0)); 
+           reg_read_port  : in  STD_LOGIC_VECTOR(31 downto 0);
+           pc             : in  STD_LOGIC_VECTOR(31 downto 0);
+           data_bus       : out STD_LOGIC_VECTOR(31 downto 0)); 
     end component;
   
   
   
     component data_bus_mux_b is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
-           zero           : in  STD_LOGIC_VECTOR( 0 downto 0);
            reg_read_port  : in  STD_LOGIC_VECTOR(31 downto 0);
            immedediate    : in  STD_LOGIC_VECTOR(31 downto 0);
            data_bus       : out STD_LOGIC_VECTOR(31 downto 0)); 
@@ -314,14 +310,12 @@ i_register_file: register_file port map (
 
 i_data_bus_mux_a: data_bus_mux_a port map (
      bus_select               => decode_select_a,
-     zero                     => decode_zero_a,
      reg_read_port            => reg_read_data_a,
      pc                       => pc,
      data_bus                 => a_bus); 
 
 i_data_bus_mux_b: data_bus_mux_b port map (
      bus_select                => decode_select_b,
-     zero                      => decode_zero_b,
      reg_read_port             => reg_read_data_b,
      immedediate               => decode_immed,
      data_bus                  => b_bus); 

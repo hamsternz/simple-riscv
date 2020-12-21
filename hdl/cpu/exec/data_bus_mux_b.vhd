@@ -37,7 +37,6 @@ use work.cpu_constants.ALL;
 
 entity data_bus_mux_b is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
-           zero           : in  STD_LOGIC_VECTOR( 0 downto 0);
            reg_read_port  : in  STD_LOGIC_VECTOR(31 downto 0);
            immedediate    : in  STD_LOGIC_VECTOR(31 downto 0);
            data_bus       : out STD_LOGIC_VECTOR(31 downto 0)); 
@@ -46,18 +45,13 @@ end entity;
 architecture Behavioral of data_bus_mux_b is
 begin
 
-process(bus_select, reg_read_port, immedediate, zero) 
+process(bus_select, reg_read_port, immedediate) 
     begin
-        if zero = "1" then
-            data_bus <= (others => '0');
-        else
-            case bus_select is
-                when B_BUS_IMMEDIATE => 
-                    data_bus <= immedediate;
-                when others =>
-                    data_bus <= reg_read_port; 
-            end case;
-        end if;
+        case bus_select is
+            when B_BUS_IMMEDIATE => 
+                data_bus <= immedediate;
+            when others =>
+                data_bus <= reg_read_port; 
+        end case;
     end process;
-
 end Behavioral;

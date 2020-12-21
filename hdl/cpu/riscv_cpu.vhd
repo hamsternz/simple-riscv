@@ -104,11 +104,9 @@ architecture Behavioral of riscv_cpu is
             
             decode_reg_a              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
             decode_select_a           : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-            decode_zero_a             : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
     
             decode_reg_b              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
             decode_select_b           : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-            decode_zero_b             : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
 
             decode_jump_enable        : out STD_LOGIC := '0';
             decode_pc_mode            : out STD_LOGIC_VECTOR(1 downto 0) := "00";
@@ -144,11 +142,9 @@ architecture Behavioral of riscv_cpu is
             
     signal decode_reg_a              : STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
     signal decode_select_a           : STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-    signal decode_zero_a             : STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
     
     signal decode_reg_b              : STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
     signal decode_select_b           : STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-    signal decode_zero_b             : STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
     
     signal decode_jump_enable        : STD_LOGIC := '0';
     signal decode_pc_mode            : STD_LOGIC_VECTOR(1 downto 0) := "00";
@@ -183,11 +179,9 @@ architecture Behavioral of riscv_cpu is
             
             decode_reg_a              : in  STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
             decode_select_a           : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-            decode_zero_a             : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
         
             decode_reg_b              : in  STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
             decode_select_b           : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-            decode_zero_b             : in  STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
 
             decode_jump_enable        : in STD_LOGIC := '0';        
             decode_pc_mode            : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
@@ -275,11 +269,9 @@ decode: decode_unit port map (
         
         decode_reg_a          => decode_reg_a,
         decode_select_a       => decode_select_a,
-        decode_zero_a         => decode_zero_a,
 
         decode_reg_b          => decode_reg_b, 
         decode_select_b       => decode_select_b,
-        decode_zero_b         => decode_zero_b,
 
         decode_jump_enable        => decode_jump_enable,
         decode_pc_mode            => decode_pc_mode,
@@ -315,11 +307,9 @@ exec: exec_unit port map (
         
         decode_reg_a              => decode_reg_a,
         decode_select_a           => decode_select_a,
-        decode_zero_a             => decode_zero_a,
 
         decode_reg_b              => decode_reg_b, 
         decode_select_b           => decode_select_b,
-        decode_zero_b             => decode_zero_b,
 
         decode_jump_enable        => decode_jump_enable,
         decode_pc_mode            => decode_pc_mode,

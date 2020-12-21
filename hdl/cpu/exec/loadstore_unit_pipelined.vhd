@@ -39,6 +39,7 @@ entity loadstore_unit is
 
             loadstore_active          : in  STD_LOGIC;
             loadstore_complete        : out STD_LOGIC;
+            loadstore_failed          : out STD_LOGIC := '0';
 
             decode_loadstore_enable   : in  STD_LOGIC;
             decode_loadstore_write    : in  STD_LOGIC;
@@ -88,12 +89,12 @@ begin
 -- THIS COULD BE CLOCKED TO IMPROVE TIMING
 -- AT THE COST OF MEMORY READ LATENCY
 --------------------------------------------
-    loadstore_complete <= loadstore_active and (sign_ex_complete or ((not bus_busy) and decode_loadstore_write));
+    loadstore_complete <= sign_ex_complete;
 process(clk) 
     begin
         if rising_edge(clk) then
             sign_ex_data_in    <= bus_din;
-            sign_ex_active     <= loadstore_active and (not bus_busy) and not decode_loadstore_write and not sign_ex_active;
+            sign_ex_active     <= loadstore_active and (not bus_busy) and (not sign_ex_active);
         end if;
     end process;
 --------------------------------------------

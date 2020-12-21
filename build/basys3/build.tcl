@@ -12,7 +12,7 @@ read_vhdl ../../hdl/cpu/exec/program_counter.vhd
 read_vhdl ../../hdl/cpu/exec/data_bus_mux_a.vhd
 read_vhdl ../../hdl/cpu/exec/alu.vhd
 read_vhdl ../../hdl/cpu/exec/exec_unit.vhd
-read_vhdl ../../hdl/cpu/exec/loadstore_unit.vhd
+read_vhdl ../../hdl/cpu/exec/loadstore_unit_pipelined.vhd
 read_vhdl ../../hdl/cpu/exec/sign_extender.vhd
 read_vhdl ../../hdl/cpu/exec/shifter.vhd
 read_vhdl ../../hdl/cpu/exec/result_bus_mux.vhd

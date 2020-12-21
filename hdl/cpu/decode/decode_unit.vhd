@@ -52,11 +52,9 @@ entity decode_unit is
             
             decode_reg_a              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
             decode_select_a           : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-            decode_zero_a             : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
     
             decode_reg_b              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
             decode_select_b           : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
-            decode_zero_b             : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
     
             decode_jump_enable        : out STD_LOGIC := '0';
             decode_pc_mode            : out STD_LOGIC_VECTOR(1 downto 0) := "00";
@@ -140,11 +138,9 @@ process(clk)
         
                 decode_reg_a            <= rs1; 
                 decode_select_a         <= A_BUS_REGISTER;
-                decode_zero_a           <= "0";
         
                 decode_reg_b            <= rs2;
                 decode_select_b         <= B_BUS_REGISTER;
-                decode_zero_b           <= "0";
         
                 decode_pc_mode          <= PC_JMP_RELATIVE_CONDITIONAL;
                 decode_branchtest_mode <= func3;
@@ -173,7 +169,7 @@ process(clk)
                    when "0110111" =>    
                        decode_alu_enable       <= '1';
                        decode_immed            <= immed_U;
-                       decode_zero_a           <= "1";
+                       decode_reg_a            <= "00000"; 
                        decode_select_b         <= B_BUS_IMMEDIATE;
                        decode_alu_mode         <= ALU_OR; 
                        decode_rdest            <= rd;
