@@ -807,6 +807,16 @@ process
                 report "116: ORI r02 <= r02 | 0x20";
                 assert debug_data = x"00000025" report "FAIL: register r02 not 0x00000025" severity FAILURE;
 
+            when x"F00001D8" =>                  
+                -- CSRRW r05, 0xF11, r00
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                report "117: CSRRW r05, 0xF11, r00";
+                assert debug_data = x"F00DF00D" report "FAIL: register r05 not 0xF00DF00D" severity FAILURE;
+
+            when x"F00001DC" =>                  
+            when x"F00001E0" =>                  
+            when x"F00001E4" =>                  
                 report "All tests complete";
                 wait;
             when x"effffff0" =>

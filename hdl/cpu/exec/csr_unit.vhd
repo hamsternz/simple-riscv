@@ -80,6 +80,7 @@ process(clk)
                          local_csr_complete    <= '1';
                          local_csr_failed      <= '0';
                          local_csr_result      <= x"F00DF00D";
+                         report "READ Vendor ID";
                       when others   =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '0';

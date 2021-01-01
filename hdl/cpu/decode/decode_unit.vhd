@@ -463,131 +463,136 @@ process(clk)
                                when others  =>  NULL;
                                  -- Undecoded for opcode 0001111                      
                             end case;
-                         when "1110011"  =>
-                            case func3 is 
-                               when "000"  =>
-                                  case fetch_opcode(31 downto 20) is
-                                     when "000000000000" =>
-                                         if rs1 = "00000" and rd = "00000" then
+
+                         when others =>
+
+                      end case;
+                   when "1110011"  =>
+                       case func3 is 
+                           when "000"  =>
+                               case fetch_opcode(31 downto 20) is
+                                   when "000000000000" =>
+                                       if rs1 = "00000" and rd = "00000" then
                                            ------------ ECALL ------------------
                                            -- TODO
-                                         end if; 
-                                     when "000000000001" =>
-                                         if rs1 = "00000" and rd = "00000" then
+                                       end if; 
+                                   when "000000000001" =>
+                                       if rs1 = "00000" and rd = "00000" then
                                            ------------ EBREAK ------------------
                                            -- TODO
-                                         end if; 
-                                     when others =>
-                                  end case;
-                               when "001"  =>
-                                  ------------ CSRRW -------------------
-                                  decode_csr_enable <= '1';
-                                  if rd = "00000" then
-                                     decode_csr_mode   <= CSR_WRITE;
-                                  else
-                                     decode_csr_mode   <= CSR_READWRITE;
-                                  end if;
+                                       end if; 
+                                   when others =>
+                               end case;
+                           when "001"  =>
+                               ------------ CSRRW -------------------
+                               decode_csr_enable <= '1';
+                               if rd = "00000" then
+                                   decode_csr_mode   <= CSR_WRITE;
+                               else
+                                   decode_csr_mode   <= CSR_READWRITE;
+                               end if;
 
-                               when "010"  =>
-                                  ------------ CSRRS -------------------
-                                  decode_csr_enable <= '1';
-                                  if rs1 = "00000" then
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_NOACTION;
-                                     else
-                                        decode_csr_mode   <= CSR_READ;
-                                     end if;
-                                  else
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_WRITESET;
-                                     else
-                                        decode_csr_mode   <= CSR_READWRITESET;
-                                     end if;
-                                  end if;
+                           when "010"  =>
+                               ------------ CSRRS -------------------
+                               decode_csr_enable <= '1';
+                               if rs1 = "00000" then
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_NOACTION;
+                                       report "CSR_NOACTION";
+                                   else
+                                       decode_csr_mode   <= CSR_READ;
+                                       report "CSR_READ";
+                                   end if;
+                               else
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_WRITESET;
+                                       report "CSR_WRITESET";
+                                   else
+                                       decode_csr_mode   <= CSR_READWRITESET;
+                                       report "CSR_READWRITESET";
+                                   end if;
+                               end if;
 
-                               when "011"  =>
-                                  ------------ CSRRC -------------------
-                                  decode_csr_enable <= '1';
-                                  if rs1 = "00000" then
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_NOACTION;
-                                     else
-                                        decode_csr_mode   <= CSR_READ;
-                                     end if;
-                                  else
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_WRITECLEAR;
-                                     else
-                                        decode_csr_mode   <= CSR_READWRITECLEAR;
-                                     end if;
-                                  end if;
+                           when "011"  =>
+                               ------------ CSRRC -------------------
+                               decode_csr_enable <= '1';
+                               if rs1 = "00000" then
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_NOACTION;
+                                   else
+                                       decode_csr_mode   <= CSR_READ;
+                                   end if;
+                               else
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_WRITECLEAR;
+                                   else
+                                       decode_csr_mode   <= CSR_READWRITECLEAR;
+                                   end if;
+                               end if;
 
-                               when "100"  =>
-                                  -- Added to reduce logic usage ---
-                                  decode_csr_enable <= '0';
-                                  decode_csr_mode   <= CSR_NOACTION;
-                                  decode_immed      <= immed_Z;
-                                  decode_select_b   <= B_BUS_IMMEDIATE;
+                           when "100"  =>
+                               -- Added to reduce logic usage ---
+                               decode_csr_enable <= '0';
+                               decode_csr_mode   <= CSR_NOACTION;
+                               decode_immed      <= immed_Z;
+                               decode_select_b   <= B_BUS_IMMEDIATE;
 
-                               when "101"  =>
-                                  ------------ CSRRWI -------------------
-                                  decode_csr_enable <= '1';
-                                  decode_immed      <= immed_Z;
-                                  decode_select_b   <= B_BUS_IMMEDIATE;
+                           when "101"  =>
+                               ------------ CSRRWI -------------------
+                               decode_csr_enable <= '1';
+                               decode_immed      <= immed_Z;
+                               decode_select_b   <= B_BUS_IMMEDIATE;
 
-                                  if rd = "00000" then
-                                      decode_csr_mode   <= CSR_WRITE;
-                                  else
-                                      decode_csr_mode   <= CSR_READWRITE;
-                                  end if;
+                               if rd = "00000" then
+                                   decode_csr_mode   <= CSR_WRITE;
+                               else
+                                   decode_csr_mode   <= CSR_READWRITE;
+                               end if;
 
-                               when "110"  =>
-                                  ------------ CSRRSI -------------------
-                                  decode_csr_enable <= '1';
-                                  decode_immed      <= immed_Z;
-                                  decode_select_b   <= B_BUS_IMMEDIATE;
-                                  -- rs1 in this context is an immedaite value for the CSR update
-                                  if rs1 = "00000" then
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_NOACTION;
-                                     else
-                                        decode_csr_mode   <= CSR_READ;
-                                     end if;
-                                  else
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_WRITESET;
-                                     else
-                                        decode_csr_mode   <= CSR_READWRITESET;
-                                     end if;
-                                  end if;
+                           when "110"  =>
+                               ------------ CSRRSI -------------------
+                               decode_csr_enable <= '1';
+                               decode_immed      <= immed_Z;
+                               decode_select_b   <= B_BUS_IMMEDIATE;
+                               -- rs1 in this context is an immedaite value for the CSR update
+                               if rs1 = "00000" then
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_NOACTION;
+                                   else
+                                       decode_csr_mode   <= CSR_READ;
+                                   end if;
+                               else
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_WRITESET;
+                                   else
+                                       decode_csr_mode   <= CSR_READWRITESET;
+                                   end if;
+                               end if;
 
-                               when "111"  =>
-                                  ------------ CSRRCI -------------------
-                                  decode_csr_enable <= '1';
-                                  decode_immed      <= immed_Z;
-                                  decode_select_b   <= B_BUS_IMMEDIATE;
-                                  -- rs1 in this context is an immedaite value for the CSR update
-                                  if rs1 = "00000" then
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_NOACTION;
-                                     else
-                                        decode_csr_mode   <= CSR_READ;
-                                     end if;
-                                  else
-                                     if rd = "00000" then
-                                        decode_csr_mode   <= CSR_WRITECLEAR;
-                                     else
-                                        decode_csr_mode   <= CSR_READWRITECLEAR;
-                                     end if;
-                                  end if;
-
-                               when others =>
-                                    -- Undecoded for opcode 1110011                      
-                            end case;
-                         when others  =>  NULL;
-                      end case;
+                           when "111"  =>
+                               ------------ CSRRCI -------------------
+                               decode_csr_enable <= '1';
+                               decode_immed      <= immed_Z;
+                               decode_select_b   <= B_BUS_IMMEDIATE;
+                               -- rs1 in this context is an immedaite value for the CSR update
+                               if rs1 = "00000" then
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_NOACTION;
+                                   else
+                                       decode_csr_mode   <= CSR_READ;
+                                   end if;
+                               else
+                                   if rd = "00000" then
+                                       decode_csr_mode   <= CSR_WRITECLEAR;
+                                   else
+                                       decode_csr_mode   <= CSR_READWRITECLEAR;
+                                   end if;
+                               end if;
+                           when others =>
+                               -- Undecoded for opcode 1110011                      
+                       end case;
                    when others =>
-                     -- Undecoded for opcodes                      
+                       -- Undecoded for opcodes                      
                 end case;
             end if;
 

@@ -56,7 +56,7 @@ process(res_src, res_alu, aux, res_shifter, res_pc_plus_four, res_memory)
             when RESULT_ALU => 
                 res_bus <= res_alu;
             when RESULT_CSR => 
-                res_bus <= res_CSR;
+                res_bus <= res_csr;
             when RESULT_PC_PLUS_4 =>
                 res_bus <= res_pc_plus_four;
             when RESULT_MEMORY =>
