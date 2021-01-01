@@ -48,8 +48,9 @@ end entity;
 architecture Behavioral of shifter is
    -- Must agree with decode.vhd
    signal padding : std_logic_vector(15 downto 0);
+   signal result  : std_logic_vector(31 downto 0);
+   signal phase   : std_logic := '0';
 begin
-    shift_complete <= shift_active;
     
 process(shift_mode,a)
     begin
@@ -107,6 +108,16 @@ process(shift_mode, a, b, padding)
                 end if;           
             end if;
     
-            c <= t;
+            result <= t;
    end process;
+
+process(clk)
+   begin
+      if rising_edge(clk) then
+         shift_complete <= shift_active and not phase; 
+         phase          <= shift_active and not phase; 
+         c              <= result;
+      end if;
+   end process;
+
 end Behavioral;

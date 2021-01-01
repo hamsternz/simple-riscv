@@ -70,13 +70,17 @@ entity decode_unit is
             decode_alu_enable         : out STD_LOGIC := '0';
             decode_alu_mode           : out STD_LOGIC_VECTOR(2 downto 0) := "000";
 
+            decode_csr_enable         : out STD_LOGIC := '0';
+            decode_csr_mode           : out STD_LOGIC_VECTOR(2 downto 0)  := "000";
+            decode_csr_reg            : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+
             decode_branchtest_enable  : out STD_LOGIC := '0';
             decode_branchtest_mode    : out STD_LOGIC_VECTOR(2 downto 0) := "000";
 
             decode_shift_enable       : out STD_LOGIC := '0';
             decode_shift_mode         : out STD_LOGIC_VECTOR(1 downto 0) := "00";
     
-            decode_result_src         : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
+            decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 
             -- To allow interrupts to be forced
@@ -91,11 +95,13 @@ architecture Behavioral of decode_unit is
     signal rs2     : STD_LOGIC_VECTOR( 4 downto 0);
     signal func3   : STD_LOGIC_VECTOR( 2 downto 0);
     signal func7   : STD_LOGIC_VECTOR( 6 downto 0);
+    signal func12  : STD_LOGIC_VECTOR(11 downto 0);
     signal immed_I : STD_LOGIC_VECTOR(31 downto 0);
     signal immed_S : STD_LOGIC_VECTOR(31 downto 0);
     signal immed_B : STD_LOGIC_VECTOR(31 downto 0);
     signal immed_U : STD_LOGIC_VECTOR(31 downto 0);
     signal immed_J : STD_LOGIC_VECTOR(31 downto 0);
+    signal immed_Z : STD_LOGIC_VECTOR(31 downto 0);
     signal instr31 : STD_LOGIC_VECTOR(31 downto 0);
 
     -- Exception handling/Interrupts
@@ -114,6 +120,7 @@ begin
    rd      <= fetch_opcode(11 downto 7);
    func3   <= fetch_opcode(14 downto 12);
    func7   <= fetch_opcode(31 downto 25);
+   func12  <= fetch_opcode(31 downto 20);
    rs1     <= fetch_opcode(19 downto 15);
    rs2     <= fetch_opcode(24 downto 20);
    immed_I <= instr31(31 downto 12) & fetch_opcode(31 downto 20);
@@ -121,6 +128,7 @@ begin
    immed_B <= instr31(31 downto 12) & fetch_opcode(7) & fetch_opcode(30 downto 25) & fetch_opcode(11 downto 8) & "0";
    immed_U <= fetch_opcode(31 downto 12) & x"000";
    immed_J <= instr31(31 downto 20) & fetch_opcode(19 downto 12) & fetch_opcode(20) & fetch_opcode(30 downto 21) & "0" ;
+   immed_Z <= "000000000000000000000000000" & rs1;
 
 process(clk)
     begin
@@ -131,6 +139,7 @@ process(clk)
                 decode_addr              <= fetch_addr;
                 decode_immed             <= immed_I;
                 decode_force_complete    <= '0';
+                decode_csr_enable        <= '0';
                 decode_alu_enable        <= '0';
                 decode_jump_enable       <= '0';
                 decode_shift_enable      <= '0';
@@ -154,6 +163,8 @@ process(clk)
                 end if;      
         
                 decode_alu_mode         <= ALU_ADD;  -- Adds are used for memory addressing when minimal size is built
+                decode_csr_mode         <= CSR_NOACTION;
+                decode_csr_reg          <= func12;
                 decode_shift_mode       <= SHIFTER_LEFT_LOGICAL;
                 decode_result_src       <= RESULT_ALU;         
                 decode_rdest            <= "00000";  -- By default write to register zero (which stays zero)
@@ -453,21 +464,111 @@ process(clk)
                                  -- Undecoded for opcode 0001111                      
                             end case;
                          when "1110011"  =>
-                            case fetch_opcode(31 downto 20) is
-                               when "000000000000" =>
-                                   if rs1 = "00000" and func3 = "000" and rd = "00000" then
-                                     ------------ ECALL ------------------
-                                     -- TODO
-                                   end if; 
-                               when "000000000001" =>
-                                   if rs1 = "00000" and func3 = "000" and rd = "00000" then
-                                     ------------ EBREAK ------------------
-                                     -- TODO
-                                   end if; 
-                               when others  =>  NULL;
+                            case func3 is 
+                               when "000"  =>
+                                  case fetch_opcode(31 downto 20) is
+                                     when "000000000000" =>
+                                         if rs1 = "00000" and rd = "00000" then
+                                           ------------ ECALL ------------------
+                                           -- TODO
+                                         end if; 
+                                     when "000000000001" =>
+                                         if rs1 = "00000" and rd = "00000" then
+                                           ------------ EBREAK ------------------
+                                           -- TODO
+                                         end if; 
+                                     when others =>
+                                  end case;
+                               when "001"  =>
+                                  ------------ CSRRW -------------------
+                                  decode_csr_enable <= '1';
+                                  if rd = "00000" then
+                                     decode_csr_mode   <= CSR_WRITE;
+                                  else
+                                     decode_csr_mode   <= CSR_READWRITE;
+                                  end if;
+
+                               when "010"  =>
+                                  ------------ CSRRS -------------------
+                                  decode_csr_enable <= '1';
+                                  if rd = "00000" then
+                                     decode_csr_mode   <= CSR_WRITESET;
+                                  else
+                                     decode_csr_mode   <= CSR_READWRITESET;
+                                  end if;
+
+                               when "011"  =>
+                                  ------------ CSRRC -------------------
+                                  decode_csr_enable <= '1';
+                                  if rd = "00000" then
+                                     decode_csr_mode   <= CSR_WRITECLEAR;
+                                  else
+                                     decode_csr_mode   <= CSR_READWRITECLEAR;
+                                  end if;
+
+                               when "100"  =>
+                                  -- Added to reduce logic usage ---
+                                  decode_csr_enable <= '0';
+                                  decode_csr_mode   <= CSR_NOACTION;
+                                  decode_immed      <= immed_Z;
+                                  decode_select_b   <= B_BUS_IMMEDIATE;
+
+                               when "101"  =>
+                                  ------------ CSRRWI -------------------
+                                  decode_csr_enable <= '1';
+                                  decode_immed      <= immed_Z;
+                                  decode_select_b   <= B_BUS_IMMEDIATE;
+
+                                  if rd = "00000" then
+                                      decode_csr_mode   <= CSR_WRITE;
+                                  else
+                                      decode_csr_mode   <= CSR_READWRITE;
+                                  end if;
+
+                               when "110"  =>
+                                  ------------ CSRRSI -------------------
+                                  decode_csr_enable <= '1';
+                                  decode_immed      <= immed_Z;
+                                  decode_select_b   <= B_BUS_IMMEDIATE;
+
+                                  if rs1 = "00000" then
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_NOACTION;
+                                     else
+                                        decode_csr_mode   <= CSR_READ;
+                                     end if;
+                                  else
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_WRITESET;
+                                     else
+                                        decode_csr_mode   <= CSR_READWRITESET;
+                                     end if;
+                                  end if;
+
+                               when "111"  =>
+                                  ------------ CSRRCI -------------------
+                                  decode_csr_enable <= '1';
+                                  decode_immed      <= immed_Z;
+                                  decode_select_b   <= B_BUS_IMMEDIATE;
+
+                                  if rs1 = "00000" then
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_NOACTION;
+                                     else
+                                        decode_csr_mode   <= CSR_READ;
+                                     end if;
+                                  else
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_WRITECLEAR;
+                                     else
+                                        decode_csr_mode   <= CSR_READWRITECLEAR;
+                                     end if;
+                                  end if;
+
+                               when others =>
+                                    -- Undecoded for opcode 1110011                      
                             end case;
                          when others  =>  NULL;
-                            -- Undecoded for opcode 1110011                      
                       end case;
                    when others =>
                      -- Undecoded for opcodes                      

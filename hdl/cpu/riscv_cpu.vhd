@@ -122,6 +122,10 @@ architecture Behavioral of riscv_cpu is
             decode_alu_enable         : out STD_LOGIC := '0';
             decode_alu_mode           : out STD_LOGIC_VECTOR(2 downto 0) := "000";
 
+            decode_csr_enable         : out STD_LOGIC := '0';
+            decode_csr_mode           : out STD_LOGIC_VECTOR(2 downto 0)  := "000";
+            decode_csr_reg            : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+
             decode_branchtest_enable : out STD_LOGIC := '0';
             decode_branchtest_mode   : out STD_LOGIC_VECTOR(2 downto 0) := "000";
 
@@ -129,7 +133,7 @@ architecture Behavioral of riscv_cpu is
             decode_shift_mode         : out STD_LOGIC_VECTOR(1 downto 0) := "00";
     
     
-            decode_result_src         : out STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
+            decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0')
             
             );            
@@ -160,13 +164,17 @@ architecture Behavioral of riscv_cpu is
     signal decode_alu_enable         : STD_LOGIC := '0';
     signal decode_alu_mode           : STD_LOGIC_VECTOR(2 downto 0) := "000";
 
+    signal decode_csr_enable         : STD_LOGIC := '0';
+    signal decode_csr_mode           : STD_LOGIC_VECTOR(2 downto 0)  := "000";
+    signal decode_csr_reg            : STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+
     signal decode_branchtest_enable  : STD_LOGIC := '0';
     signal decode_branchtest_mode    : STD_LOGIC_VECTOR(2 downto 0) := "000";
 
     signal decode_shift_enable       : STD_LOGIC := '0';
     signal decode_shift_mode         : STD_LOGIC_VECTOR(1 downto 0) := "00";
     
-    signal decode_result_src         : STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
+    signal decode_result_src         : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
     signal decode_rdest              : STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
 
     component exec_unit is
@@ -197,6 +205,10 @@ architecture Behavioral of riscv_cpu is
             decode_alu_enable         : in  STD_LOGIC := '0';
             decode_alu_mode           : in  STD_LOGIC_VECTOR(2 downto 0) := "000";
         
+            decode_csr_enable         : in  STD_LOGIC := '0';
+            decode_csr_mode           : in  STD_LOGIC_VECTOR(2 downto 0)  := "000";
+            decode_csr_reg            : in  STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+        
             decode_branchtest_enable  : in  STD_LOGIC := '0';
             decode_branchtest_mode    : in  STD_LOGIC_VECTOR(2 downto 0) := "000";
         
@@ -204,7 +216,7 @@ architecture Behavioral of riscv_cpu is
             decode_shift_mode         : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
         
         
-            decode_result_src         : in  STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
+            decode_result_src         : in  STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
     
             exec_instr_completed      : out STD_LOGIC;
@@ -287,6 +299,10 @@ decode: decode_unit port map (
         decode_alu_enable         => decode_alu_enable,
         decode_alu_mode           => decode_alu_mode,
 
+        decode_csr_enable         => decode_csr_enable,
+        decode_csr_mode           => decode_csr_mode,
+        decode_csr_reg            => decode_csr_reg,
+
         decode_branchtest_enable  => decode_branchtest_enable,
         decode_branchtest_mode    => decode_branchtest_mode,
 
@@ -324,6 +340,10 @@ exec: exec_unit port map (
 
         decode_alu_enable         => decode_alu_enable,
         decode_alu_mode           => decode_alu_mode,
+
+        decode_csr_enable         => decode_csr_enable,
+        decode_csr_mode           => decode_csr_mode,
+        decode_csr_reg            => decode_csr_reg,
 
         decode_branchtest_enable  => decode_branchtest_enable,
         decode_branchtest_mode    => decode_branchtest_mode,

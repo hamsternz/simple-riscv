@@ -62,6 +62,10 @@ entity exec_unit is
            decode_alu_enable         : in  STD_LOGIC := '0';
            decode_alu_mode           : in  STD_LOGIC_VECTOR(2 downto 0) := "000";
         
+           decode_csr_enable         : in  STD_LOGIC := '0';
+           decode_csr_mode           : in  STD_LOGIC_VECTOR(2 downto 0)  := "000";
+           decode_csr_reg            : in  STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+        
            decode_branchtest_enable : in  STD_LOGIC := '0';
            decode_branchtest_mode   : in  STD_LOGIC_VECTOR(2 downto 0) := "000";
         
@@ -69,7 +73,7 @@ entity exec_unit is
            decode_shift_mode         : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
         
         
-           decode_result_src         : in  STD_LOGIC_VECTOR(1 downto 0) := (others => '0');         
+           decode_result_src         : in  STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
            decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
           
            exec_instr_completed      : out STD_LOGIC                      := '0';
@@ -116,8 +120,9 @@ architecture Behavioral of exec_unit is
     end component;
   
     component result_bus_mux is
-        port ( res_src          : in  STD_LOGIC_VECTOR( 1 downto 0);
+        port ( res_src          : in  STD_LOGIC_VECTOR( 2 downto 0);
                res_alu          : in  STD_LOGIC_VECTOR(31 downto 0);
+               res_csr          : in  STD_LOGIC_VECTOR(31 downto 0);
                res_shifter      : in  STD_LOGIC_VECTOR(31 downto 0);
                res_pc_plus_four : in  STD_LOGIC_VECTOR(31 downto 0);
                res_memory       : in  STD_LOGIC_VECTOR(31 downto 0);
@@ -127,6 +132,22 @@ architecture Behavioral of exec_unit is
     signal a_bus                 : STD_LOGIC_VECTOR(31 downto 0);
     signal b_bus                 : STD_LOGIC_VECTOR(31 downto 0);
     signal c_bus                 : STD_LOGIC_VECTOR(31 downto 0);
+
+    component csr_unit is
+      port ( clk             : in  STD_LOGIC;
+             csr_mode        : in  STD_LOGIC_VECTOR(2 downto 0);
+             csr_reg         : in  STD_LOGIC_VECTOR(11 downto 0);
+             csr_active      : in  STD_LOGIC;  
+             csr_complete    : out STD_LOGIC;  
+             csr_failed      : out STD_LOGIC;  
+             a               : in  STD_LOGIC_VECTOR(31 downto 0);
+             b               : in  STD_LOGIC_VECTOR(31 downto 0);
+             c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+    end component;
+    signal csr_active          : std_logic;
+    signal csr_complete        : std_logic;
+    signal csr_failed          : std_logic;
+    signal c_csr               : STD_LOGIC_VECTOR(31 downto 0);
 
     component alu is
       port ( clk             : in  STD_LOGIC;
@@ -244,25 +265,25 @@ begin
     right_instr         <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
 
     alu_active          <= right_instr and decode_alu_enable;
+    csr_active          <= right_instr and decode_csr_enable;
     shift_active        <= right_instr and decode_shift_enable;
     branchtest_active   <= right_instr and decode_branchtest_enable;
     loadstore_active    <= right_instr and decode_loadstore_enable;
     jump_active         <= right_instr and decode_jump_enable;
-    completed           <= right_instr and (alu_complete        or shift_complete or 
-                                            branchtest_complete or jump_complete or
-                                            loadstore_complete);
+    completed           <= right_instr and (alu_complete        or csr_complete  or shift_complete or 
+                                            branchtest_complete or jump_complete or loadstore_complete);
 
     --- This might be better off in the decoder...
-    unknown             <= right_instr and not(decode_alu_enable        or decode_shift_enable or
-                                               decode_branchtest_enable or decode_loadstore_enable or 
-                                               decode_jump_enable);
+    unknown             <= right_instr and not(decode_alu_enable        or decode_csr_enable       or decode_shift_enable or
+                                               decode_branchtest_enable or decode_loadstore_enable or decode_jump_enable);
     -- Should the Program counter be advanced.
     pc_completed        <= completed or decode_force_complete;
    
     -- Outputs going to the outside world 
     exec_current_pc       <= pc;
     exec_instr_completed  <= completed;
-    exec_instr_failed     <= unknown or alu_failed or shift_failed or branchtest_failed or jump_failed or loadstore_failed;
+    exec_instr_failed     <= unknown or alu_failed        or csr_failed  or shift_failed
+                                     or branchtest_failed or jump_failed or loadstore_failed;
     exec_flush_required   <= not right_instr;
     debug_pc              <= pc;
     
@@ -275,6 +296,17 @@ i_alu: alu port map (
      a                => a_bus,
      b                => b_bus,
      c                => c_alu); 
+
+i_csr_unit: csr_unit port map (
+     clk              => clk,
+     csr_mode         => decode_csr_mode,
+     csr_reg          => decode_csr_reg,
+     csr_active       => csr_active,
+     csr_complete     => csr_complete,
+     csr_failed       => csr_failed,  
+     a                => a_bus,
+     b                => b_bus,
+     c                => c_csr); 
 
 i_shifter: shifter port map (
      clk              => clk,
@@ -289,6 +321,7 @@ i_shifter: shifter port map (
 i_result_bus_mux: result_bus_mux port map (
      res_src          => decode_result_src,
      res_alu          => c_alu,
+     res_csr          => c_csr,
      res_shifter      => c_shifter,
      res_pc_plus_four => pc_plus_four,
      res_memory       => loadstore_data,

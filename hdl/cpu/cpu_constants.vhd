@@ -68,6 +68,17 @@ package cpu_constants is
     constant ALU_LESS_THAN_SIGNED        : STD_LOGIC_VECTOR(2 downto 0) := "110";
     constant ALU_LESS_THAN_UNSIGNED      : STD_LOGIC_VECTOR(2 downto 0) := "111";
     
+    -- CSR functions                  
+    constant CSR_NOACTION                : STD_LOGIC_VECTOR(2 downto 0) := "000";
+    constant CSR_WRITE                   : STD_LOGIC_VECTOR(2 downto 0) := "001"; 
+    constant CSR_WRITESET                : STD_LOGIC_VECTOR(2 downto 0) := "010";
+    constant CSR_WRITECLEAR              : STD_LOGIC_VECTOR(2 downto 0) := "011";
+    constant CSR_READ                    : STD_LOGIC_VECTOR(2 downto 0) := "100"; 
+    constant CSR_READWRITE               : STD_LOGIC_VECTOR(2 downto 0) := "101"; 
+    constant CSR_READWRITESET            : STD_LOGIC_VECTOR(2 downto 0) := "110";
+    constant CSR_READWRITECLEAR          : STD_LOGIC_VECTOR(2 downto 0) := "111";
+         
+         
     -- Barrel shifter options
     constant SHIFTER_LEFT_LOGICAL        : STD_LOGIC_VECTOR(1 downto 0) := "00";
     constant SHIFTER_LEFT_ARITH          : STD_LOGIC_VECTOR(1 downto 0) := "01";  -- not used
@@ -75,10 +86,11 @@ package cpu_constants is
     constant SHIFTER_RIGHT_ARITH         : STD_LOGIC_VECTOR(1 downto 0) := "11";
     
     -- Selction of what is going to the reginster file
-    constant RESULT_ALU                  : STD_LOGIC_VECTOR(1 downto 0) := "00";
-    constant RESULT_SHIFTER              : STD_LOGIC_VECTOR(1 downto 0) := "01";
-    constant RESULT_MEMORY               : STD_LOGIC_VECTOR(1 downto 0) := "10";
-    constant RESULT_PC_PLUS_4            : STD_LOGIC_VECTOR(1 downto 0) := "11";
+    constant RESULT_ALU                  : STD_LOGIC_VECTOR(2 downto 0) := "000";
+    constant RESULT_SHIFTER              : STD_LOGIC_VECTOR(2 downto 0) := "001";
+    constant RESULT_MEMORY               : STD_LOGIC_VECTOR(2 downto 0) := "010";
+    constant RESULT_CSR                  : STD_LOGIC_VECTOR(2 downto 0) := "011";
+    constant RESULT_PC_PLUS_4            : STD_LOGIC_VECTOR(2 downto 0) := "100";
     
     constant SIGN_EX_WIDTH_B             : STD_LOGIC_VECTOR(1 downto 0) := "00";
     constant SIGN_EX_WIDTH_H             : STD_LOGIC_VECTOR(1 downto 0) := "01";
