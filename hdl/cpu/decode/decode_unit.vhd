@@ -486,6 +486,9 @@ process(clk)
                            when "001"  =>
                                ------------ CSRRW -------------------
                                decode_csr_enable <= '1';
+                               decode_immed      <= immed_Z;
+                               decode_result_src <= RESULT_CSR;
+                               decode_rdest      <= rd;
                                if rd = "00000" then
                                    decode_csr_mode   <= CSR_WRITE;
                                else
@@ -495,6 +498,9 @@ process(clk)
                            when "010"  =>
                                ------------ CSRRS -------------------
                                decode_csr_enable <= '1';
+                               decode_immed      <= immed_Z;
+                               decode_result_src <= RESULT_CSR;
+                               decode_rdest      <= rd;
                                if rs1 = "00000" then
                                    if rd = "00000" then
                                        decode_csr_mode   <= CSR_NOACTION;
@@ -516,6 +522,9 @@ process(clk)
                            when "011"  =>
                                ------------ CSRRC -------------------
                                decode_csr_enable <= '1';
+                               decode_immed      <= immed_Z;
+                               decode_result_src <= RESULT_CSR;
+                               decode_rdest      <= rd;
                                if rs1 = "00000" then
                                    if rd = "00000" then
                                        decode_csr_mode   <= CSR_NOACTION;
@@ -536,12 +545,15 @@ process(clk)
                                decode_csr_mode   <= CSR_NOACTION;
                                decode_immed      <= immed_Z;
                                decode_select_b   <= B_BUS_IMMEDIATE;
+                               decode_result_src <= RESULT_CSR;
 
                            when "101"  =>
                                ------------ CSRRWI -------------------
                                decode_csr_enable <= '1';
                                decode_immed      <= immed_Z;
                                decode_select_b   <= B_BUS_IMMEDIATE;
+                               decode_result_src <= RESULT_CSR;
+                               decode_rdest      <= rd;
 
                                if rd = "00000" then
                                    decode_csr_mode   <= CSR_WRITE;
@@ -554,6 +566,8 @@ process(clk)
                                decode_csr_enable <= '1';
                                decode_immed      <= immed_Z;
                                decode_select_b   <= B_BUS_IMMEDIATE;
+                               decode_result_src <= RESULT_CSR;
+                               decode_rdest      <= rd;
                                -- rs1 in this context is an immedaite value for the CSR update
                                if rs1 = "00000" then
                                    if rd = "00000" then
@@ -574,6 +588,8 @@ process(clk)
                                decode_csr_enable <= '1';
                                decode_immed      <= immed_Z;
                                decode_select_b   <= B_BUS_IMMEDIATE;
+                               decode_result_src <= RESULT_CSR;
+                               decode_rdest      <= rd;
                                -- rs1 in this context is an immedaite value for the CSR update
                                if rs1 = "00000" then
                                    if rd = "00000" then

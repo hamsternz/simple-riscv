@@ -155,7 +155,7 @@ process(clk)
          end if;
 
          -- Decouple the CSR transaction from the internal CPU buses
-         if csr_active <= '1' and local_csr_in_progress = '0' then
+         if csr_active = '1' and local_csr_in_progress = '0' then
             local_csr_reg    <= csr_reg;
             local_csr_value  <= a;
             local_csr_mode   <= csr_mode;

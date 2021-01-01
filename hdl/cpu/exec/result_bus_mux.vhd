@@ -46,11 +46,10 @@ entity result_bus_mux is
 end entity;
 
 architecture Behavioral of result_bus_mux is
-   signal aux : std_logic_vector(31 downto 0);
 begin
 
 -- Select between things with less timing slack
-process(res_src, res_alu, aux, res_shifter, res_pc_plus_four, res_memory) 
+process(res_src, res_alu, res_csr, res_shifter, res_pc_plus_four, res_memory) 
     begin
         case res_src is
             when RESULT_ALU => 
