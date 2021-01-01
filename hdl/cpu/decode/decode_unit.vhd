@@ -491,19 +491,35 @@ process(clk)
                                when "010"  =>
                                   ------------ CSRRS -------------------
                                   decode_csr_enable <= '1';
-                                  if rd = "00000" then
-                                     decode_csr_mode   <= CSR_WRITESET;
+                                  if rs1 = "00000" then
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_NOACTION;
+                                     else
+                                        decode_csr_mode   <= CSR_READ;
+                                     end if;
                                   else
-                                     decode_csr_mode   <= CSR_READWRITESET;
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_WRITESET;
+                                     else
+                                        decode_csr_mode   <= CSR_READWRITESET;
+                                     end if;
                                   end if;
 
                                when "011"  =>
                                   ------------ CSRRC -------------------
                                   decode_csr_enable <= '1';
-                                  if rd = "00000" then
-                                     decode_csr_mode   <= CSR_WRITECLEAR;
+                                  if rs1 = "00000" then
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_NOACTION;
+                                     else
+                                        decode_csr_mode   <= CSR_READ;
+                                     end if;
                                   else
-                                     decode_csr_mode   <= CSR_READWRITECLEAR;
+                                     if rd = "00000" then
+                                        decode_csr_mode   <= CSR_WRITECLEAR;
+                                     else
+                                        decode_csr_mode   <= CSR_READWRITECLEAR;
+                                     end if;
                                   end if;
 
                                when "100"  =>
@@ -530,7 +546,7 @@ process(clk)
                                   decode_csr_enable <= '1';
                                   decode_immed      <= immed_Z;
                                   decode_select_b   <= B_BUS_IMMEDIATE;
-
+                                  -- rs1 in this context is an immedaite value for the CSR update
                                   if rs1 = "00000" then
                                      if rd = "00000" then
                                         decode_csr_mode   <= CSR_NOACTION;
@@ -550,7 +566,7 @@ process(clk)
                                   decode_csr_enable <= '1';
                                   decode_immed      <= immed_Z;
                                   decode_select_b   <= B_BUS_IMMEDIATE;
-
+                                  -- rs1 in this context is an immedaite value for the CSR update
                                   if rs1 = "00000" then
                                      if rd = "00000" then
                                         decode_csr_mode   <= CSR_NOACTION;

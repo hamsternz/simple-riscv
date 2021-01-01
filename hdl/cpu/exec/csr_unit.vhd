@@ -49,31 +49,118 @@ entity csr_unit is
 end entity;
 
 architecture Behavioral of csr_unit is
+  signal local_csr_reg         : std_logic_vector(11 downto 0) := (others => '0');
+  signal local_csr_value       : std_logic_vector(31 downto 0) := (others => '0');
+  signal local_csr_mode        : std_logic_vector( 2 downto 0) := (others => '0');
+  signal local_csr_in_progress : std_logic := '0';
+  signal local_csr_complete    : std_logic := '0';
+  signal local_csr_failed      : std_logic := '0';
+  signal local_csr_result      : std_logic_vector(31 downto 0) := (others => '0');
 begin
-   csr_complete <= csr_active;
-   csr_failed   <= '0';
-   
-process(csr_mode, a, b)
-    begin
-        case csr_mode is
-            when CSR_NOACTION       =>
-                c <= a OR b;
-            when CSR_WRITE          =>
-                c <= a OR b;
-            when CSR_WRITESET       =>
-                c <= a OR b;
-            when CSR_WRITECLEAR     =>
-                c <= a OR b;
-            when CSR_READ           =>
-                c <= a OR b;
-            when CSR_READWRITE      =>
-                c <= a OR b;
-            when CSR_READWRITESET   =>
-                c <= a OR b;
-            when CSR_READWRITECLEAR =>
-                c <= a OR b;
-            when others =>
-                c <= (others => '0');
-        end case;
-    end process;
+   -- Pass results to the outside world
+   csr_complete  <= csr_active and local_csr_complete;
+   csr_failed    <= csr_active and local_csr_failed;
+   c             <= local_csr_result;
+  
+process(clk)
+   begin
+      if rising_edge(clk) then
+         if local_csr_in_progress = '1' then
+            local_csr_result      <= (others => '0');
+            case local_csr_reg is 
+                when x"F11" =>   -- Vendor ID
+                   case local_csr_mode is
+                      when CSR_NOACTION =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= (others => '0');
+                      when CSR_READ     =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= x"F00DF00D";
+                      when others   =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '0';
+                         local_csr_failed      <= '1';
+                         local_csr_result      <= (others => '0');
+                   end case; 
+                when x"F12" =>   -- Architecture ID
+                   case local_csr_mode is
+                      when CSR_NOACTION =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= (others => '0');
+                      when CSR_READ     =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= x"FEEDFEED";
+                      when others   =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '0';
+                         local_csr_failed      <= '1';
+                         local_csr_result      <= (others => '0');
+                   end case; 
+                when x"F13" =>   -- implementation ID
+                   case local_csr_mode is
+                      when CSR_NOACTION =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= (others => '0');
+                      when CSR_READ     =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= x"DEADBEEF";
+                      when others   =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '0';
+                         local_csr_failed      <= '1';
+                         local_csr_result      <= (others => '0');
+                   end case; 
+                when x"F14" =>   -- Hardware thread ID
+                   case local_csr_mode is
+                      when CSR_NOACTION =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= (others => '0');
+                      when CSR_READ     =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '1';
+                         local_csr_failed      <= '0';
+                         local_csr_result      <= x"00000000";
+                      when others   =>
+                         local_csr_in_progress <= '0';
+                         local_csr_complete    <= '0';
+                         local_csr_failed      <= '1';
+                         local_csr_result      <= (others => '0');
+                   end case; 
+                when others =>
+                   if local_csr_mode = CSR_NOACTION then
+                      local_csr_in_progress <= '0';
+                      local_csr_complete    <= '1';
+                      local_csr_failed      <= '0';
+                   else 
+                      local_csr_in_progress <= '0';
+                      local_csr_complete    <= '0';
+                      local_csr_failed      <= '1';
+                   end if;
+            end case;
+         end if;
+
+         -- Decouple the CSR transaction from the internal CPU buses
+         if csr_active <= '1' and local_csr_in_progress = '0' then
+            local_csr_reg    <= csr_reg;
+            local_csr_value  <= a;
+            local_csr_mode   <= csr_mode;
+            local_csr_in_progress <= '1';
+         end if; 
+      end if;
+   end process;
+
 end Behavioral;
