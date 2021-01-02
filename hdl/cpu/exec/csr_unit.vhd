@@ -65,25 +65,24 @@ begin
 process(clk)
    begin
       if rising_edge(clk) then
+         local_csr_complete    <= '0';
+         local_csr_failed      <= '0';
+         local_csr_result      <= (others => '0');
          if local_csr_in_progress = '1' then
-            local_csr_result      <= (others => '0');
             case local_csr_reg is 
                 when x"F11" =>   -- Vendor ID
                    case local_csr_mode is
                       when CSR_NOACTION =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= (others => '0');
                       when CSR_READ     =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= x"F00DF00D";
                          report "READ Vendor ID";
                       when others   =>
                          local_csr_in_progress <= '0';
-                         local_csr_complete    <= '0';
                          local_csr_failed      <= '1';
                          local_csr_result      <= (others => '0');
                    end case; 
@@ -92,17 +91,14 @@ process(clk)
                       when CSR_NOACTION =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= (others => '0');
                       when CSR_READ     =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= x"FEEDFEED";
                          report "READ Architecture ID";
                       when others   =>
                          local_csr_in_progress <= '0';
-                         local_csr_complete    <= '0';
                          local_csr_failed      <= '1';
                          local_csr_result      <= (others => '0');
                    end case; 
@@ -111,17 +107,14 @@ process(clk)
                       when CSR_NOACTION =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= (others => '0');
                       when CSR_READ     =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= x"DEADBEEF";
                          report "READ Implementation ID";
                       when others   =>
                          local_csr_in_progress <= '0';
-                         local_csr_complete    <= '0';
                          local_csr_failed      <= '1';
                          local_csr_result      <= (others => '0');
                    end case; 
@@ -130,16 +123,13 @@ process(clk)
                       when CSR_NOACTION =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= (others => '0');
                       when CSR_READ     =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '1';
-                         local_csr_failed      <= '0';
                          local_csr_result      <= x"00000000";
                       when others   =>
                          local_csr_in_progress <= '0';
-                         local_csr_complete    <= '0';
                          local_csr_failed      <= '1';
                          local_csr_result      <= (others => '0');
                    end case; 
@@ -147,20 +137,17 @@ process(clk)
                    if local_csr_mode = CSR_NOACTION then
                       local_csr_in_progress <= '0';
                       local_csr_complete    <= '1';
-                      local_csr_failed      <= '0';
                    else 
                       local_csr_in_progress <= '0';
-                      local_csr_complete    <= '0';
                       local_csr_failed      <= '1';
                    end if;
             end case;
          end if;
-
-         -- Decouple the CSR transaction from the internal CPU buses
-         if csr_active = '1' and local_csr_in_progress = '0' then
-            local_csr_reg    <= csr_reg;
-            local_csr_value  <= a;
-            local_csr_mode   <= csr_mode;
+         
+         if csr_active = '1' and local_csr_in_progress = '0' and local_csr_complete = '0' and local_csr_failed = '0' then
+            local_csr_reg         <= csr_reg;
+            local_csr_value       <= a;
+            local_csr_mode        <= csr_mode;
             local_csr_in_progress <= '1';
          end if; 
       end if;

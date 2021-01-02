@@ -85,7 +85,7 @@ package cpu_constants is
     constant SHIFTER_RIGHT_LOGICAL       : STD_LOGIC_VECTOR(1 downto 0) := "10";
     constant SHIFTER_RIGHT_ARITH         : STD_LOGIC_VECTOR(1 downto 0) := "11";
     
-    -- Selction of what is going to the reginster file
+    -- Selction of what is going to the register file
     constant RESULT_ALU                  : STD_LOGIC_VECTOR(2 downto 0) := "000";
     constant RESULT_SHIFTER              : STD_LOGIC_VECTOR(2 downto 0) := "001";
     constant RESULT_MEMORY               : STD_LOGIC_VECTOR(2 downto 0) := "010";
