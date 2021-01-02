@@ -815,8 +815,26 @@ process
                 assert debug_data = x"F00DF00D" report "FAIL: register r05 not 0xF00DF00D" severity FAILURE;
 
             when x"F00001DC" =>                  
+                -- CSRRW r05, 0xF12, r00
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                report "118: CSRRW r05, 0xF12, r00";
+                assert debug_data = x"FEEDFEED" report "FAIL: register r05 not 0xFEEDFEED" severity FAILURE;
+
             when x"F00001E0" =>                  
+                -- CSRRW r05, 0xF13, r00
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                report "119: CSRRW r05, 0xF13, r00";
+                assert debug_data = x"DEADBEEF" report "FAIL: register r05 not 0xDEADBEEF" severity FAILURE;
+
             when x"F00001E4" =>                  
+                -- CSRRW r05, 0xF14, r00
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                report "120: CSRRW r05, 0xF14, r00";
+                assert debug_data = x"00000000" report "FAIL: register r05 not 0x00000000" severity FAILURE;
+
                 report "All tests complete";
                 wait;
             when x"effffff0" =>

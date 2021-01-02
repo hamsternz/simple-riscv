@@ -99,6 +99,7 @@ process(clk)
                          local_csr_complete    <= '1';
                          local_csr_failed      <= '0';
                          local_csr_result      <= x"FEEDFEED";
+                         report "READ Architecture ID";
                       when others   =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '0';
@@ -117,6 +118,7 @@ process(clk)
                          local_csr_complete    <= '1';
                          local_csr_failed      <= '0';
                          local_csr_result      <= x"DEADBEEF";
+                         report "READ Implementation ID";
                       when others   =>
                          local_csr_in_progress <= '0';
                          local_csr_complete    <= '0';
