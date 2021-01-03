@@ -173,12 +173,10 @@ process(clk)
                 local_csr_value  <= a;
                 local_csr_mode   <= csr_mode;
                 local_csr_in_progress <= '1';
-                report "Start new CSR request";
             end if;
          else 
             if local_csr_complete = '1' OR local_csr_failed = '1'  then
                 local_csr_in_progress <= '0';
-                report "End of any CSR request";
              end if; 
          end if; 
       end if;

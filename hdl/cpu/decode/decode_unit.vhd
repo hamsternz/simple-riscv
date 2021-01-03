@@ -504,18 +504,14 @@ process(clk)
                                if rs1 = "00000" then
                                    if rd = "00000" then
                                        decode_csr_mode   <= CSR_NOACTION;
-                                       report "CSR_NOACTION";
                                    else
                                        decode_csr_mode   <= CSR_READ;
-                                       report "CSR_READ";
                                    end if;
                                else
                                    if rd = "00000" then
                                        decode_csr_mode   <= CSR_WRITESET;
-                                       report "CSR_WRITESET";
                                    else
                                        decode_csr_mode   <= CSR_READWRITESET;
-                                       report "CSR_READWRITESET";
                                    end if;
                                end if;
 
