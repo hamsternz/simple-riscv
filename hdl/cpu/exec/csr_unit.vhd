@@ -57,30 +57,76 @@ architecture Behavioral of csr_unit is
   signal local_csr_failed      : std_logic := '0';
   signal local_csr_result      : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_F11 is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
   signal csr_F11_active        : std_logic := '0';
   signal csr_F11_complete      : std_logic := '0';
   signal csr_F11_failed        : std_logic := '0';
   signal csr_F11_result        : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_F12 is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
   signal csr_F12_active        : std_logic := '0';
   signal csr_F12_complete      : std_logic := '0';
   signal csr_F12_failed        : std_logic := '0';
   signal csr_F12_result        : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_F13 is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
   signal csr_F13_active        : std_logic := '0';
   signal csr_F13_complete      : std_logic := '0';
   signal csr_F13_failed        : std_logic := '0';
   signal csr_F13_result        : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_F14 is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
   signal csr_F14_active        : std_logic := '0';
   signal csr_F14_complete      : std_logic := '0';
   signal csr_F14_failed        : std_logic := '0';
   signal csr_F14_result        : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_other is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
   signal csr_other_active      : std_logic := '0';
   signal csr_other_complete    : std_logic := '0';
   signal csr_other_failed      : std_logic := '0';
   signal csr_other_result      : std_logic_vector(31 downto 0) := (others => '0');
+
 begin
    -- Pass results to the outside world
    csr_complete  <= csr_active and local_csr_complete;
@@ -132,7 +178,7 @@ process(clk)
          else 
             if local_csr_complete = '1' OR local_csr_failed = '1'  then
                 local_csr_in_progress <= '0';
-                report "ENd of any CSR request";
+                report "End of any CSR request";
              end if; 
          end if; 
       end if;
@@ -141,119 +187,66 @@ process(clk)
 ----------------------------------------------------
 -- 0xF11 Vendor ID
 ----------------------------------------------------
-csr_F11: process(clk) 
-   begin
-      if rising_edge(clk) then
-         csr_F11_result      <= (others => '0');
-         csr_F11_complete    <= '0';
-         csr_F11_failed      <= '0';
-         if csr_F11_active = '1' and csr_F11_complete = '0' and csr_F11_failed = '0' then
-            case local_csr_mode is
-               when CSR_NOACTION =>
-                  csr_F11_complete    <= '1';
-               when CSR_READ     =>
-                  csr_F11_complete    <= '1';
-                  csr_F11_result      <= x"F00DF00D";
-                  report "READ Vendor ID";
-               when others   =>
-                  csr_F11_failed      <= '1';
-            end case; 
-         end if;
-      end if;
-   end process;  
+i_csr_F11: csr_F11 port map ( 
+    clk          => clk, 
+    csr_active   => csr_F11_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_F11_complete,
+    csr_failed   => csr_F11_failed,
+    csr_result   => csr_F11_result
+  );
 
 ----------------------------------------------------
--- 0xF12 Architecture ID
+-- 0xF12 architecture ID
 ----------------------------------------------------
-csr_F12: process(clk) 
-   begin
-      if rising_edge(clk) then
-         csr_F12_result      <= (others => '0');
-         csr_F12_complete    <= '0';
-         csr_F12_failed      <= '0';
-         if csr_F12_active = '1' and csr_F12_complete = '0' and csr_F12_failed = '0' then
-             case local_csr_mode is
-                when CSR_NOACTION =>
-                   csr_F12_complete    <= '1';
-                when CSR_READ     =>
-                   csr_F12_complete    <= '1';
-                   csr_F12_result      <= x"FEEDFEED";
-                   report "READ Architecture ID";
-                when others   =>
-                   csr_F12_failed      <= '1';
-             end case; 
-         end if;
-      end if;
-   end process;  
+i_csr_F12: csr_F12 port map ( 
+    clk          => clk, 
+    csr_active   => csr_F12_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_F12_complete,
+    csr_failed   => csr_F12_failed,
+    csr_result   => csr_F12_result
+  );
 
 ----------------------------------------------------
--- 0xF13 Implementation ID
+-- 0xF13 implementation ID
 ----------------------------------------------------
-csr_F13: process(clk) 
-   begin
-      if rising_edge(clk) then
-         csr_F13_result      <= (others => '0');
-         csr_F13_complete    <= '0';
-         csr_F13_failed      <= '0';
-         if csr_F13_active = '1' and csr_F13_complete = '0' and csr_F13_failed = '0' then
-             case local_csr_mode is
-                when CSR_NOACTION =>
-                   csr_F13_complete    <= '1';
-                when CSR_READ     =>
-                   csr_F13_complete    <= '1';
-                   csr_F13_result      <= x"DEADBEEF";
-                   report "READ Implementation ID";
-                when others   =>
-                   csr_F13_failed      <= '1';
-             end case; 
-         end if;
-      end if;
-   end process;  
-
+i_csr_F13: csr_F13 port map ( 
+    clk          => clk, 
+    csr_active   => csr_F13_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_F13_complete,
+    csr_failed   => csr_F13_failed,
+    csr_result   => csr_F13_result
+  );
 
 ----------------------------------------------------
--- 0xF14 Architecture ID
+-- 0xF14 HART ID
 ----------------------------------------------------
-csr_F14: process(clk) 
-   begin
-      if rising_edge(clk) then
-         csr_F14_result      <= (others => '0');
-         csr_F14_complete    <= '0';
-         csr_F14_failed      <= '0';
-         if csr_F14_active = '1' and csr_F14_complete = '0' and csr_F14_failed = '0' then
-             case local_csr_mode is
-                when CSR_NOACTION =>
-                   csr_F14_complete    <= '1';
-                when CSR_READ     =>
-                   csr_F14_complete    <= '1';
-                   report "READ Architecture ID";
-                when others   =>
-                   csr_F14_failed      <= '1';
-             end case; 
-         end if;
-      end if;
-   end process;  
-
+i_csr_F14: csr_F14 port map ( 
+    clk          => clk, 
+    csr_active   => csr_F14_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_F14_complete,
+    csr_failed   => csr_F14_failed,
+    csr_result   => csr_F14_result
+  );
 
 ----------------------------------------------------
--- Others - fail the request other than no action
+-- All others
 ----------------------------------------------------
-csr_other: process(clk) 
-   begin
-      if rising_edge(clk) then
-         csr_other_result      <= (others => '0');
-         csr_other_complete    <= '0';
-         csr_other_failed      <= '0';
-         if csr_other_active = '1' then
-            case local_csr_mode is
-               when CSR_NOACTION =>
-                  csr_other_complete    <= '1';
-               when others   =>
-                  csr_other_failed      <= '1';
-            end case; 
-         end if;
-      end if;
-   end process;  
-
+i_csr_other: csr_other port map ( 
+    clk          => clk, 
+    csr_active   => csr_other_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_other_complete,
+    csr_failed   => csr_other_failed,
+    csr_result   => csr_other_result
+  );
 
 end Behavioral;

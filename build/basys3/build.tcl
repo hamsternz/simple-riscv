@@ -22,6 +22,12 @@ read_vhdl ../../hdl/cpu/exec/data_bus_mux_b.vhd
 read_vhdl ../../hdl/cpu/exec/branch_test.vhd
 read_vhdl ../../hdl/cpu/cpu_constants.vhd
 
+read_vhdl ../../hdl/cpu/csr/csr_F11.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F12.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F13.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F14.vhd
+read_vhdl ../../hdl/cpu/csr/csr_other.vhd
+
 # The Program ROM and RAM
 read_vhdl ../../hdl/memory/program_memory_basys3_serial.vhd
 read_vhdl ../../hdl/memory/ram_memory_basys3_serial.vhd
