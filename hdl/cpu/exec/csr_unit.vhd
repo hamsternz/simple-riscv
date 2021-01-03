@@ -102,27 +102,38 @@ process(clk)
       if rising_edge(clk) then
          --------------------------------------------------------------- 
          -- Assert the enable signal for the desired CSR
-         --------------------------------------------------------------- 
+         ---------------------------------------------------------------
+         csr_F11_active   <= '0';
+         csr_F12_active   <= '0';
+         csr_F13_active   <= '0';
+         csr_F14_active   <= '0'; 
+         csr_other_active <= '0'; 
          if local_csr_in_progress = '1' and local_csr_complete = '0' and local_csr_failed = '0' then
             case local_csr_reg is 
                 when x"F11" => csr_F11_active   <= '1'; -- Vendor ID
                 when x"F12" => csr_F12_active   <= '1'; -- Architecture ID
+                when x"F13" => csr_F13_active   <= '1'; -- Vendor ID
+                when x"F14" => csr_F14_active   <= '1'; -- Architecture ID
                 when others => csr_other_active <= '1';
             end case;
          end if;
 
          --------------------------------------------------------------- 
          -- Decouple the CSR transaction from the internal CPU buses
-         --------------------------------------------------------------- 
-         if csr_active = '1' and (local_csr_in_progress = '0' OR (local_csr_complete = '1' OR local_csr_failed = '1'))  then
-            local_csr_reg    <= csr_reg;
-            local_csr_value  <= a;
-            local_csr_mode   <= csr_mode;
-            local_csr_in_progress <= '1';
-            report "Start new CSR request";
-         elsif local_csr_complete = '1' OR local_csr_failed = '1'  then
-            local_csr_in_progress <= '0';
-            report "ENd of any CSR request";
+         ---------------------------------------------------------------
+         if local_csr_in_progress = '0' then
+             if csr_active = '1' then
+                local_csr_reg    <= csr_reg;
+                local_csr_value  <= a;
+                local_csr_mode   <= csr_mode;
+                local_csr_in_progress <= '1';
+                report "Start new CSR request";
+            end if;
+         else 
+            if local_csr_complete = '1' OR local_csr_failed = '1'  then
+                local_csr_in_progress <= '0';
+                report "ENd of any CSR request";
+             end if; 
          end if; 
       end if;
    end process;
@@ -136,7 +147,7 @@ csr_F11: process(clk)
          csr_F11_result      <= (others => '0');
          csr_F11_complete    <= '0';
          csr_F11_failed      <= '0';
-         if csr_F11_active = '1' then
+         if csr_F11_active = '1' and csr_F11_complete = '0' and csr_F11_failed = '0' then
             case local_csr_mode is
                when CSR_NOACTION =>
                   csr_F11_complete    <= '1';
@@ -157,10 +168,10 @@ csr_F11: process(clk)
 csr_F12: process(clk) 
    begin
       if rising_edge(clk) then
-         csr_F12_result        <= (others => '0');
-         csr_other_complete    <= '0';
-         csr_other_failed      <= '0';
-         if csr_F12_active = '1' then
+         csr_F12_result      <= (others => '0');
+         csr_F12_complete    <= '0';
+         csr_F12_failed      <= '0';
+         if csr_F12_active = '1' and csr_F12_complete = '0' and csr_F12_failed = '0' then
              case local_csr_mode is
                 when CSR_NOACTION =>
                    csr_F12_complete    <= '1';
@@ -181,10 +192,10 @@ csr_F12: process(clk)
 csr_F13: process(clk) 
    begin
       if rising_edge(clk) then
-         csr_F13_result        <= (others => '0');
-         csr_other_complete    <= '0';
-         csr_other_failed      <= '0';
-         if csr_F13_active = '1' then
+         csr_F13_result      <= (others => '0');
+         csr_F13_complete    <= '0';
+         csr_F13_failed      <= '0';
+         if csr_F13_active = '1' and csr_F13_complete = '0' and csr_F13_failed = '0' then
              case local_csr_mode is
                 when CSR_NOACTION =>
                    csr_F13_complete    <= '1';
@@ -206,10 +217,10 @@ csr_F13: process(clk)
 csr_F14: process(clk) 
    begin
       if rising_edge(clk) then
-         csr_F14_result        <= (others => '0');
-         csr_other_complete    <= '0';
-         csr_other_failed      <= '0';
-         if csr_F12_active = '1' then
+         csr_F14_result      <= (others => '0');
+         csr_F14_complete    <= '0';
+         csr_F14_failed      <= '0';
+         if csr_F14_active = '1' and csr_F14_complete = '0' and csr_F14_failed = '0' then
              case local_csr_mode is
                 when CSR_NOACTION =>
                    csr_F14_complete    <= '1';
