@@ -203,6 +203,9 @@ architecture Behavioral of program_memory is
          119    =>      "111100010011" & "00000" & "010" & "00101" & "1110011",  -- CSRRS r05 <= CSR[0xF13] (mimpid)
          120    =>      "111100010100" & "00000" & "010" & "00101" & "1110011",  -- CSRRS r05 <= CSR[0xF14] (mhartid)
          --- CSRRW - source Reg not r00, so should just be a read+write
+         121    =>                "01010101010101010101" & "00010" & "0110111",  -- LUI  r02 <= 0x55555000
+         122    =>      "010101010101" & "00010" & "110" & "00010" & "0010011",  -- ORI  r02 <= r02 | 0x555
+         123    =>      "001101000000" & "00000" & "001" & "00001" & "1110011",  -- CSRRW r02 <= CSR[0x340], CSR[0x340] <= 0x55555555 (stratch)
          --- CSRRS
          --- CSRRC
          --  CSRRWI

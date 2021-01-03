@@ -57,6 +57,20 @@ architecture Behavioral of csr_unit is
   signal local_csr_failed      : std_logic := '0';
   signal local_csr_result      : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_340 is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
+  signal csr_340_active        : std_logic := '0';
+  signal csr_340_complete      : std_logic := '0';
+  signal csr_340_failed        : std_logic := '0';
+  signal csr_340_result        : std_logic_vector(31 downto 0) := (others => '0');
+
   component csr_F11 is
   port ( clk          : in  STD_LOGIC;
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
@@ -135,12 +149,15 @@ begin
 
    -- Merge back all the status and result signals
    local_csr_complete <= csr_F11_complete OR csr_F12_complete OR csr_F13_complete OR csr_F14_complete 
+                      OR csr_340_complete
                       OR csr_other_complete;
 
    local_csr_failed   <= csr_F11_failed   OR csr_F12_failed   OR csr_F13_failed   OR csr_F14_failed
+                      OR csr_340_failed
                       OR csr_other_failed;
 
    local_csr_result   <= csr_F11_result   OR csr_F12_result   OR csr_F13_result   OR csr_F14_result
+                      OR csr_340_result
                       OR csr_other_result;
 
 process(clk)
@@ -149,6 +166,7 @@ process(clk)
          --------------------------------------------------------------- 
          -- Assert the enable signal for the desired CSR
          ---------------------------------------------------------------
+         csr_340_active   <= '0';
          csr_F11_active   <= '0';
          csr_F12_active   <= '0';
          csr_F13_active   <= '0';
@@ -156,6 +174,7 @@ process(clk)
          csr_other_active <= '0'; 
          if local_csr_in_progress = '1' and local_csr_complete = '0' and local_csr_failed = '0' then
             case local_csr_reg is 
+                when x"340" => csr_340_active   <= '1'; -- mscratch   
                 when x"F11" => csr_F11_active   <= '1'; -- Vendor ID
                 when x"F12" => csr_F12_active   <= '1'; -- Architecture ID
                 when x"F13" => csr_F13_active   <= '1'; -- Vendor ID
@@ -181,6 +200,19 @@ process(clk)
          end if; 
       end if;
    end process;
+
+----------------------------------------------------
+-- 0x340 mscratch  
+----------------------------------------------------
+i_csr_340: csr_340 port map ( 
+    clk          => clk, 
+    csr_active   => csr_340_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_340_complete,
+    csr_failed   => csr_340_failed,
+    csr_result   => csr_340_result
+  );
 
 ----------------------------------------------------
 -- 0xF11 Vendor ID
