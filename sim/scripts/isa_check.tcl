@@ -19,6 +19,22 @@ read_vhdl ../../hdl/cpu/exec/register_file.vhd
 read_vhdl ../../hdl/cpu/exec/data_bus_mux_b.vhd
 read_vhdl ../../hdl/cpu/exec/branch_test.vhd
 
+read_vhdl ../../hdl/cpu/csr/csr_300_mstatus.vhd
+read_vhdl ../../hdl/cpu/csr/csr_301_misa.vhd
+read_vhdl ../../hdl/cpu/csr/csr_304_mie.vhd
+read_vhdl ../../hdl/cpu/csr/csr_305_mtvec.vhd
+read_vhdl ../../hdl/cpu/csr/csr_344_mip.vhd
+read_vhdl ../../hdl/cpu/csr/csr_340_mscratch.vhd
+read_vhdl ../../hdl/cpu/csr/csr_341_mepc.vhd
+read_vhdl ../../hdl/cpu/csr/csr_342_mcause.vhd
+read_vhdl ../../hdl/cpu/csr/csr_343_mtval.vhd
+read_vhdl ../../hdl/cpu/csr/csr_344_mip.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F11_mvendorid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F12_marchid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F13_mimpid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F14_mhartid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_other.vhd
+
 # The Program ROM and RAM
 read_vhdl ../../hdl/memory/program_memory.vhd
 read_vhdl ../../hdl/memory/ram_memory.vhd

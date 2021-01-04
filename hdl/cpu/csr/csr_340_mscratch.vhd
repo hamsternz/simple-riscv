@@ -1,5 +1,5 @@
 --###############################################################################
---# ./hdl/cpu/exec/csr_F13.vhd  - CSR 0xF13 - Implementation ID register
+--# ./hdl/cpu/exec/csr_340.vhd  - CSR 0x340 - mscratch register
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -36,7 +36,7 @@ use IEEE.numeric_std.all;
 
 use work.cpu_constants.ALL;
 
-entity csr_F13 is
+entity csr_340_mscratch is
   port ( clk          : in  STD_LOGIC;  
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          csr_active   : in  STD_LOGIC;  
@@ -46,11 +46,11 @@ entity csr_F13 is
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
 end entity;
 
-architecture Behavioral of csr_F13 is
-   signal complete : std_logic := '0';
-   signal failed   : std_logic := '0';
-   signal result   : std_logic_vector(31 downto 0) := (others => '0');
-
+architecture Behavioral of csr_340_mscratch is
+   signal complete     : std_logic := '0';
+   signal failed       : std_logic := '0';
+   signal result       : std_logic_vector(31 downto 0) := (others => '0');
+   signal stored_value : std_logic_vector(31 downto 0) := (others => '0');
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
@@ -63,17 +63,52 @@ process(clk)
          complete    <= '0';
          failed      <= '0';
          if csr_active = '1' and complete = '0' and failed = '0' then
-            case csr_mode is
+           case csr_mode is 
                when CSR_NOACTION =>
                   complete    <= '1';
+
+               when CSR_WRITE =>
+                  complete     <= '1';
+                  stored_value <= CSR_VALUE;
+                  report "WRITE mscratch CSR";
+
+               when CSR_WRITESET =>
+                  complete     <= '1';
+                  stored_value <= stored_value OR CSR_VALUE;
+                  report "WRITESET mscratch CSR";
+
+               when CSR_WRITECLEAR =>
+                  complete     <= '1';
+                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  report "WRITECLEAR mscratch CSR";
+
                when CSR_READ     =>
-                  complete    <= '1';
-                  result      <= x"DEADBEEF";
-                  report "READ Implementation ID";
+                  complete     <= '1';
+                  result       <= stored_value;
+                  report "READ mscratch CSR";
+
+               when CSR_READWRITE =>
+                  complete     <= '1';
+                  result       <= stored_value;
+                  stored_value <= CSR_VALUE;
+                  report "READWRITE mscratch CSR";
+
+               when CSR_READWRITESET =>
+                  complete     <= '1';
+                  result       <= stored_value;
+                  stored_value <= stored_value OR CSR_VALUE;
+                  report "READWRITESET mscratch CSR";
+
+               when CSR_READWRITECLEAR =>
+                  complete     <= '1';
+                  result       <= stored_value;
+                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  report "READWRITECLEAR mscratch CSR";
+
                when others   =>
                   failed      <= '1';
-            end case; 
+            end case;
          end if;
       end if;
-   end process;  
+   end process;
 end Behavioral;

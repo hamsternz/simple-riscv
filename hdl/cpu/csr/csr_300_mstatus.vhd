@@ -1,5 +1,5 @@
 --###############################################################################
---# ./hdl/cpu/exec/csr_340.vhd  - CSR 0x340 - Scratch register
+--# ./hdl/cpu/exec/csr_300.vhd  - CSR 0x300 - Machine status register
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -36,7 +36,7 @@ use IEEE.numeric_std.all;
 
 use work.cpu_constants.ALL;
 
-entity csr_340 is
+entity csr_300_mstatus is
   port ( clk          : in  STD_LOGIC;  
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          csr_active   : in  STD_LOGIC;  
@@ -46,7 +46,7 @@ entity csr_340 is
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
 end entity;
 
-architecture Behavioral of csr_340 is
+architecture Behavioral of csr_300_mstatus is
    signal complete     : std_logic := '0';
    signal failed       : std_logic := '0';
    signal result       : std_logic_vector(31 downto 0) := (others => '0');
@@ -70,40 +70,40 @@ process(clk)
                when CSR_WRITE =>
                   complete     <= '1';
                   stored_value <= CSR_VALUE;
-                  report "WRITE Scratch CSR";
+                  report "WRITE mstatus CSR";
 
                when CSR_WRITESET =>
                   complete     <= '1';
                   stored_value <= stored_value OR CSR_VALUE;
-                  report "WRITESET Scratch CSR";
+                  report "WRITESET mstatus CSR";
 
                when CSR_WRITECLEAR =>
                   complete     <= '1';
                   stored_value <= stored_value AND NOT CSR_VALUE;
-                  report "WRITECLEAR Scratch CSR";
+                  report "WRITECLEAR mstatus CSR";
 
                when CSR_READ     =>
                   complete     <= '1';
                   result       <= stored_value;
-                  report "READ Scratch CSR";
+                  report "READ mstatus CSR";
 
                when CSR_READWRITE =>
                   complete     <= '1';
                   result       <= stored_value;
                   stored_value <= CSR_VALUE;
-                  report "READWRITE Scratch CSR";
+                  report "READWRITE mstatus CSR";
 
                when CSR_READWRITESET =>
                   complete     <= '1';
                   result       <= stored_value;
                   stored_value <= stored_value OR CSR_VALUE;
-                  report "READWRITESET Scratch CSR";
+                  report "READWRITESET mstatus CSR";
 
                when CSR_READWRITECLEAR =>
                   complete     <= '1';
                   result       <= stored_value;
                   stored_value <= stored_value AND NOT CSR_VALUE;
-                  report "READWRITECLEAR Scratch CSR";
+                  report "READWRITECLEAR mstatus CSR";
 
                when others   =>
                   failed      <= '1';

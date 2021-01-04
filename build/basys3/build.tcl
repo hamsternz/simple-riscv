@@ -22,11 +22,12 @@ read_vhdl ../../hdl/cpu/exec/data_bus_mux_b.vhd
 read_vhdl ../../hdl/cpu/exec/branch_test.vhd
 read_vhdl ../../hdl/cpu/cpu_constants.vhd
 
-read_vhdl ../../hdl/cpu/csr/csr_340.vhd
-read_vhdl ../../hdl/cpu/csr/csr_F11.vhd
-read_vhdl ../../hdl/cpu/csr/csr_F12.vhd
-read_vhdl ../../hdl/cpu/csr/csr_F13.vhd
-read_vhdl ../../hdl/cpu/csr/csr_F14.vhd
+read_vhdl ../../hdl/cpu/csr/csr_340_mscratch.vhd
+read_vhdl ../../hdl/cpu/csr/csr_342_mcause.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F11_mvendorid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F12_marchid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F13_mimpid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_F14_mhartid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_other.vhd
 
 # The Program ROM and RAM

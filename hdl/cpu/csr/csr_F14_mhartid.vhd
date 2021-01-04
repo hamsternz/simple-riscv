@@ -1,5 +1,5 @@
 --###############################################################################
---# ./hdl/cpu/exec/csr_F12.vhd  - CSR 0xF12 - Architecture ID register
+--# ./hdl/cpu/exec/csr_F14.vhd  - CSR 0xF14 - HART ID register
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -36,7 +36,7 @@ use IEEE.numeric_std.all;
 
 use work.cpu_constants.ALL;
 
-entity csr_F12 is
+entity csr_F14_mhartid is
   port ( clk          : in  STD_LOGIC;  
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          csr_active   : in  STD_LOGIC;  
@@ -46,7 +46,7 @@ entity csr_F12 is
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
 end entity;
 
-architecture Behavioral of csr_F12 is
+architecture Behavioral of csr_F14_mhartid is
    signal complete : std_logic := '0';
    signal failed   : std_logic := '0';
    signal result   : std_logic_vector(31 downto 0) := (others => '0');
@@ -68,8 +68,7 @@ process(clk)
                   complete    <= '1';
                when CSR_READ     =>
                   complete    <= '1';
-                  result      <= x"FEEDFEED";
-                  report "READ Architecture ID";
+                  report "READ HART ID";
                when others   =>
                   failed      <= '1';
             end case; 

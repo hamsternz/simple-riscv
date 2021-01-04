@@ -1,5 +1,5 @@
 --###############################################################################
---# ./hdl/cpu/exec/csr_F14.vhd  - CSR 0xF14 - HART ID register
+--# ./hdl/cpu/exec/csr_344_mip.vhd  - CSR 0x344 - Machine interrupt pending
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -36,7 +36,7 @@ use IEEE.numeric_std.all;
 
 use work.cpu_constants.ALL;
 
-entity csr_F14 is
+entity csr_344_mip is
   port ( clk          : in  STD_LOGIC;  
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          csr_active   : in  STD_LOGIC;  
@@ -46,11 +46,11 @@ entity csr_F14 is
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
 end entity;
 
-architecture Behavioral of csr_F14 is
-   signal complete : std_logic := '0';
-   signal failed   : std_logic := '0';
-   signal result   : std_logic_vector(31 downto 0) := (others => '0');
-
+architecture Behavioral of csr_344_mip is
+   signal complete     : std_logic := '0';
+   signal failed       : std_logic := '0';
+   signal result       : std_logic_vector(31 downto 0) := (others => '0');
+   signal stored_value : std_logic_vector(31 downto 0) := (others => '0');
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
@@ -63,16 +63,52 @@ process(clk)
          complete    <= '0';
          failed      <= '0';
          if csr_active = '1' and complete = '0' and failed = '0' then
-            case csr_mode is
+           case csr_mode is 
                when CSR_NOACTION =>
                   complete    <= '1';
+
+               when CSR_WRITE =>
+                  complete     <= '1';
+                  stored_value <= CSR_VALUE;
+                  report "WRITE mie CSR";
+
+               when CSR_WRITESET =>
+                  complete     <= '1';
+                  stored_value <= stored_value OR CSR_VALUE;
+                  report "WRITESET mie CSR";
+
+               when CSR_WRITECLEAR =>
+                  complete     <= '1';
+                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  report "WRITECLEAR mie CSR";
+
                when CSR_READ     =>
-                  complete    <= '1';
-                  report "READ HART ID";
+                  complete     <= '1';
+                  result       <= stored_value;
+                  report "READ mie CSR";
+
+               when CSR_READWRITE =>
+                  complete     <= '1';
+                  result       <= stored_value;
+                  stored_value <= CSR_VALUE;
+                  report "READWRITE mie CSR";
+
+               when CSR_READWRITESET =>
+                  complete     <= '1';
+                  result       <= stored_value;
+                  stored_value <= stored_value OR CSR_VALUE;
+                  report "READWRITESET mie CSR";
+
+               when CSR_READWRITECLEAR =>
+                  complete     <= '1';
+                  result       <= stored_value;
+                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  report "READWRITECLEAR mie CSR";
+
                when others   =>
                   failed      <= '1';
-            end case; 
+            end case;
          end if;
       end if;
-   end process;  
+   end process;
 end Behavioral;
