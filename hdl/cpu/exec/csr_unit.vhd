@@ -407,12 +407,12 @@ i_csr_343: csr_343_mtval   port map (
 
 i_csr_344: csr_344_mip   port map ( 
     clk          => clk, 
-    csr_active   => csr_343_active,
+    csr_active   => csr_344_active,
     csr_mode     => local_csr_mode,
     csr_value    => local_csr_value,
-    csr_complete => csr_343_complete,
-    csr_failed   => csr_343_failed,
-    csr_result   => csr_343_result
+    csr_complete => csr_344_complete,
+    csr_failed   => csr_344_failed,
+    csr_result   => csr_344_result
   );
 
 i_csr_F11: csr_F11_mvendorid port map ( 
