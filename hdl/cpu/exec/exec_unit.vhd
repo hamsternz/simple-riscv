@@ -134,23 +134,23 @@ architecture Behavioral of exec_unit is
     signal c_bus                 : STD_LOGIC_VECTOR(31 downto 0);
 
     component csr_unit is
-      port ( clk             : in  STD_LOGIC;
-             csr_mode        : in  STD_LOGIC_VECTOR(2 downto 0);
-             csr_reg         : in  STD_LOGIC_VECTOR(11 downto 0);
-             csr_active      : in  STD_LOGIC;  
-             csr_complete    : out STD_LOGIC;  
-             csr_failed      : out STD_LOGIC;  
-             a               : in  STD_LOGIC_VECTOR(31 downto 0);
-             b               : in  STD_LOGIC_VECTOR(31 downto 0);
-             c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+      port ( clk          : in  STD_LOGIC;
+             csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+             csr_reg      : in  STD_LOGIC_VECTOR(11 downto 0);
+             csr_active   : in  STD_LOGIC;  
+             csr_complete : out STD_LOGIC;  
+             csr_failed   : out STD_LOGIC;  
+             a            : in  STD_LOGIC_VECTOR(31 downto 0);
+             b            : in  STD_LOGIC_VECTOR(31 downto 0);
+             c            : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
              -- Exception Program counter
-             m_epc_set      : in  STD_LOGIC;
-             m_epc          : in  STD_LOGIC_VECTOR(31 downto 0);
+             m_epc_set    : in  STD_LOGIC;
+             m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
 
              -- Trap Value
-             m_tval_set     : in  STD_LOGIC;
-             m_tval         : in  STD_LOGIC_VECTOR(31 downto 0);
+             m_tval_set   : in  STD_LOGIC;
+             m_tval       : in  STD_LOGIC_VECTOR(31 downto 0);
 
              -- Exception cause
              m_cause_set  : in  STD_LOGIC;
