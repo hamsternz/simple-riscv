@@ -142,12 +142,60 @@ architecture Behavioral of exec_unit is
              csr_failed      : out STD_LOGIC;  
              a               : in  STD_LOGIC_VECTOR(31 downto 0);
              b               : in  STD_LOGIC_VECTOR(31 downto 0);
-             c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+             c               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+             -- Exception Program counter
+             m_epc_set      : in  STD_LOGIC;
+             m_epc          : in  STD_LOGIC_VECTOR(31 downto 0);
+
+             -- Trap Value
+             m_tval_set     : in  STD_LOGIC;
+             m_tval         : in  STD_LOGIC_VECTOR(31 downto 0);
+
+             -- Exception cause
+             m_cause_set  : in  STD_LOGIC;
+             m_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
+
+             -- Interupt enable
+             m_ie         : out STD_LOGIC;
+    
+             -- Interrupt enable (external, timer, software)
+             m_eie        : out STD_LOGIC;
+             m_tie        : out STD_LOGIC;
+             m_sie        : out STD_LOGIC;
+
+             -- Interrupt pending (external, timer, software)
+             m_eip        : in  STD_LOGIC;
+             m_tip        : in  STD_LOGIC;
+             m_sip        : in  STD_LOGIC;
+
+             -- Trap vectors
+             m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
+             m_tvec_flag  : out STD_LOGIC
+      ); 
     end component;
-    signal csr_active          : std_logic;
-    signal csr_complete        : std_logic;
-    signal csr_failed          : std_logic;
-    signal c_csr               : STD_LOGIC_VECTOR(31 downto 0);
+    signal csr_active   : std_logic;
+    signal csr_complete : std_logic;
+    signal csr_failed   : std_logic;
+    signal c_csr        : STD_LOGIC_VECTOR(31 downto 0);
+    signal m_epc_set    : STD_LOGIC := '0';
+    signal m_epc        : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal m_tval_set   : STD_LOGIC := '0';
+    signal m_tval       : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal m_cause_set  : STD_LOGIC := '0';
+    signal m_cause      : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal m_ie         : STD_LOGIC;
+    signal m_eie        : STD_LOGIC;
+    signal m_tie        : STD_LOGIC;
+    signal m_sie        : STD_LOGIC;
+    signal m_eip        : STD_LOGIC := '1';
+    signal m_tip        : STD_LOGIC := '1';
+    signal m_sip        : STD_LOGIC := '1';
+
+         -- Trap vectors
+    signal m_tvec_base  : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal m_tvec_flag  : STD_LOGIC;
+
 
     component alu is
       port ( clk             : in  STD_LOGIC;
@@ -298,15 +346,37 @@ i_alu: alu port map (
      c                => c_alu); 
 
 i_csr_unit: csr_unit port map (
-     clk              => clk,
-     csr_mode         => decode_csr_mode,
-     csr_reg          => decode_csr_reg,
-     csr_active       => csr_active,
-     csr_complete     => csr_complete,
-     csr_failed       => csr_failed,  
-     a                => a_bus,
-     b                => b_bus,
-     c                => c_csr); 
+     clk          => clk,
+     csr_mode     => decode_csr_mode,
+     csr_reg      => decode_csr_reg,
+     csr_active   => csr_active,
+     csr_complete => csr_complete,
+     csr_failed   => csr_failed,  
+     a            => a_bus,
+     b            => b_bus,
+     c            => c_csr,
+
+     m_epc_set    => m_epc_set,
+     m_epc        => m_epc,
+
+     m_tval_set   => m_tval_set,
+     m_tval       => m_tval,
+
+     m_cause_set  => m_cause_set,
+     m_cause      => m_cause,
+
+     m_ie         => m_ie,
+
+     m_eie        => m_eie,
+     m_tie        => m_tie,
+     m_sie        => m_sie,
+     m_eip        => m_eip,
+     m_tip        => m_tip,
+     m_sip        => m_sip,
+
+     m_tvec_base  => m_tvec_base,
+     m_tvec_flag  => m_tvec_flag
+); 
 
 i_shifter: shifter port map (
      clk              => clk,

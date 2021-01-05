@@ -37,7 +37,7 @@ use IEEE.numeric_std.all;
 use work.cpu_constants.ALL;
 
 entity csr_unit is
-   port ( clk          : in  STD_LOGIC;  
+   port ( clk         : in  STD_LOGIC;  
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          csr_reg      : in  STD_LOGIC_VECTOR(11 downto 0);
          csr_active   : in  STD_LOGIC;  
@@ -47,15 +47,36 @@ entity csr_unit is
          b            : in  STD_LOGIC_VECTOR(31 downto 0);
          c            : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         epc_set      : in  STD_LOGIC := '0';
-         epc          : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         -- Exception Program counter
+         m_epc_set    : in  STD_LOGIC;
+         m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
 
-         tval_set     : in  STD_LOGIC := '0';
-         tval         : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         -- Trap Value
+         m_tval_set   : in  STD_LOGIC;
+         m_tval       : in  STD_LOGIC_VECTOR(31 downto 0);
+ 
+         -- Exception cause
+         m_cause_set  : in  STD_LOGIC;
+         m_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
 
-         cause_set    : in  STD_LOGIC := '0';
-         cause        : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
+         -- Interupt enable
+         m_ie         : out STD_LOGIC;
+
+         -- Interrupt enable (external, timer, software)
+         m_eie        : out STD_LOGIC;
+         m_tie        : out STD_LOGIC;
+         m_sie        : out STD_LOGIC;
+
+         -- Interrupt pending (external, timer, software)
+         m_eip        : in  STD_LOGIC;
+         m_tip        : in  STD_LOGIC;
+         m_sip        : in  STD_LOGIC;
+
+         -- Trap vectors
+         m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
+         m_tvec_flag  : out STD_LOGIC
    ); 
+
 end entity;
 
 architecture Behavioral of csr_unit is
@@ -74,7 +95,8 @@ architecture Behavioral of csr_unit is
          csr_complete : out STD_LOGIC;
          csr_failed   : out STD_LOGIC;
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0);
+         m_ie         : out STD_LOGIC);
   end component;
   signal csr_300_active        : std_logic := '0';
   signal csr_300_complete      : std_logic := '0';
@@ -102,7 +124,11 @@ architecture Behavioral of csr_unit is
          csr_complete : out STD_LOGIC;
          csr_failed   : out STD_LOGIC;
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0);
+         m_eip        : in  STD_LOGIC;
+         m_tip        : in  STD_LOGIC;
+         m_sip        : in  STD_LOGIC
+  );
   end component;
   signal csr_304_active        : std_logic := '0';
   signal csr_304_complete      : std_logic := '0';
@@ -116,7 +142,9 @@ architecture Behavioral of csr_unit is
          csr_complete : out STD_LOGIC;
          csr_failed   : out STD_LOGIC;
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0);
+         m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         m_tvec_flag  : out STD_LOGIC);
   end component;
   signal csr_305_active        : std_logic := '0';
   signal csr_305_complete      : std_logic := '0';
@@ -146,8 +174,8 @@ architecture Behavioral of csr_unit is
          csr_failed   : out STD_LOGIC;
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         epc          : in  STD_LOGIC_VECTOR(31 downto 0);
-         epc_set      : in  STD_LOGIC
+         m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_epc_set    : in  STD_LOGIC
   );
   end component;
   signal csr_341_active        : std_logic := '0';
@@ -165,8 +193,8 @@ architecture Behavioral of csr_unit is
          csr_failed   : out STD_LOGIC;
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         cause        : in  STD_LOGIC_VECTOR(31 downto 0);
-         cause_set    : in  STD_LOGIC
+         m_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_cause_set  : in  STD_LOGIC
   );
   end component;
   signal csr_342_active        : std_logic := '0';
@@ -184,8 +212,8 @@ architecture Behavioral of csr_unit is
          csr_failed   : out STD_LOGIC;
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         tval         : in  STD_LOGIC_VECTOR(31 downto 0);
-         tval_set     : in  STD_LOGIC
+         m_tval       : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_tval_set   : in  STD_LOGIC
   );
   end component;
   signal csr_343_active        : std_logic := '0';
@@ -201,7 +229,10 @@ architecture Behavioral of csr_unit is
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_complete : out STD_LOGIC;
          csr_failed   : out STD_LOGIC;
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         m_eie        : out STD_LOGIC;
+         m_tie        : out STD_LOGIC;
+         m_sie        : out STD_LOGIC
   );
   end component;
   signal csr_344_active        : std_logic := '0';
@@ -359,6 +390,52 @@ process(clk)
       end if;
    end process;
 
+i_csr_300: csr_300_mstatus port map ( 
+    clk          => clk, 
+    csr_active   => csr_300_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_300_complete,
+    csr_failed   => csr_300_failed,
+    csr_result   => csr_300_result,
+    m_ie         => m_ie
+  );
+
+i_csr_301: csr_301_misa port map ( 
+    clk          => clk, 
+    csr_active   => csr_301_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_301_complete,
+    csr_failed   => csr_301_failed,
+    csr_result   => csr_301_result
+  );
+
+i_csr_304: csr_304_mie port map ( 
+    clk          => clk, 
+    csr_active   => csr_304_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_304_complete,
+    csr_failed   => csr_304_failed,
+    csr_result   => csr_304_result,
+    m_eip        => m_eip,
+    m_tip        => m_tip,
+    m_sip        => m_sip
+  );
+
+i_csr_305: csr_305_mtvec port map ( 
+    clk          => clk, 
+    csr_active   => csr_305_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_305_complete,
+    csr_failed   => csr_305_failed,
+    csr_result   => csr_305_result,
+    m_tvec_base  => m_tvec_base,
+    m_tvec_flag  => m_tvec_flag
+  );
+
 i_csr_340: csr_340_mscratch port map ( 
     clk          => clk, 
     csr_active   => csr_340_active,
@@ -377,8 +454,8 @@ i_csr_341: csr_341_mepc port map (
     csr_complete => csr_341_complete,
     csr_failed   => csr_341_failed,
     csr_result   => csr_341_result,
-    epc          => epc,
-    epc_set      => epc_set
+    m_epc        => m_epc,
+    m_epc_set    => m_epc_set
   );
 
 i_csr_342: csr_342_mcause port map ( 
@@ -389,8 +466,8 @@ i_csr_342: csr_342_mcause port map (
     csr_complete => csr_342_complete,
     csr_failed   => csr_342_failed,
     csr_result   => csr_342_result,
-    cause        => cause,
-    cause_set    => cause_set
+    m_cause      => m_cause,
+    m_cause_set  => m_cause_set
   );
 
 i_csr_343: csr_343_mtval   port map ( 
@@ -401,8 +478,8 @@ i_csr_343: csr_343_mtval   port map (
     csr_complete => csr_343_complete,
     csr_failed   => csr_343_failed,
     csr_result   => csr_343_result,
-    tval         => tval,
-    tval_set     => tval_set
+    m_tval       => m_tval,
+    m_tval_set   => m_tval_set
   );
 
 i_csr_344: csr_344_mip   port map ( 
@@ -412,7 +489,10 @@ i_csr_344: csr_344_mip   port map (
     csr_value    => local_csr_value,
     csr_complete => csr_344_complete,
     csr_failed   => csr_344_failed,
-    csr_result   => csr_344_result
+    csr_result   => csr_344_result,
+    m_eie        => m_eie,
+    m_tie        => m_tie,
+    m_sie        => m_sie
   );
 
 i_csr_F11: csr_F11_mvendorid port map ( 

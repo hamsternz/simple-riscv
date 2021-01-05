@@ -43,7 +43,9 @@ entity csr_300_mstatus is
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_complete : out STD_LOGIC;  
          csr_failed   : out STD_LOGIC;  
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+         m_ie         : out STD_LOGIC); 
 end entity;
 
 architecture Behavioral of csr_300_mstatus is
@@ -51,11 +53,38 @@ architecture Behavioral of csr_300_mstatus is
    signal failed       : std_logic := '0';
    signal result       : std_logic_vector(31 downto 0) := (others => '0');
    signal stored_value : std_logic_vector(31 downto 0) := (others => '0');
+
+   -- Split into fields
+   signal wpri         : std_logic := '0'; -- Write preserve, readback ignore
+
+   signal sd           : std_logic := '0';                                    -- Hardware zero - [f or x]State Dirty 
+   signal tsr          : std_logic := '0';                                    -- Hardwire zero - Trap sret
+   signal tw           : std_logic := '0';                                    -- Hardwire zero - Timeout wait
+   signal tvm          : std_logic := '0';                                    -- Hardwire zero - Trap Vm
+   signal mxr          : std_logic := '0';                                    -- Hardwire zero - Make eXecutable Readable      
+   signal sum          : std_logic := '0';                                    -- Hardwire zero - Supervisor User Memory access
+   signal mprv         : std_logic := '0';                                    -- Hardwure zero - Modify PRiVilege
+   signal xs           : std_logic_vector(1 downto 0) := (others => '0');     -- Hardwire zero -- x state dirty
+   signal fs           : std_logic_vector(1 downto 0) := (others => '0');     -- Hardwire zero -- f state dirty
+   signal mie          : std_logic := '0';                                -- M interrupt enable
+   signal sie          : std_logic := '0';                                    -- Hardwire zero - S interrupt enable
+   signal uie          : std_logic := '0';                                    -- Hardwire zero - U interrupt enable
+   signal mpp          : std_logic_vector(1 downto 0) := (others => '0'); -- M previous privilege - LSB hardwire zero
+   signal spp          : std_logic_vector(0 downto 0) := (others => '0');     -- Hardwire zero - S previous privilege
+   signal mpie         : std_logic := '0';                                -- M previous Interupt enable 
+   signal spie         : std_logic := '0';                                    -- Hardwire zero - S previous interrupt enable
+   signal upie         : std_logic := '0';                                    -- Hardwire zero - U previous interrupt enable
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
    csr_result   <= result;
+   m_ie         <= mie;
 
+   -- Note this layout follows the PDF diagram - 15 bits on the top line, 17 on the bottom.
+   stored_value <= sd & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & tsr  & tw   & tvm  & mxr  & sum & mprv
+                 & xs        & fs          & mpp         & wpri & wpri & spp  & mpie & wpri & spie & upie & mie & wpri & sie & uie;
+
+  
 process(clk) 
    begin
       if rising_edge(clk) then
@@ -68,41 +97,53 @@ process(clk)
                   complete    <= '1';
 
                when CSR_WRITE =>
-                  complete     <= '1';
-                  stored_value <= CSR_VALUE;
+                  complete <= '1';
+                  mpp(1)   <= csr_value(12);
+                  mpie     <= csr_value(7);
+                  mie      <= csr_value(3);
                   report "WRITE mstatus CSR";
 
                when CSR_WRITESET =>
-                  complete     <= '1';
-                  stored_value <= stored_value OR CSR_VALUE;
+                  complete <= '1';
+                  mpp(1)   <= mpp(1) OR csr_value(12);
+                  mpie     <= mpie   OR csr_value(7);
+                  mie      <= mie    OR csr_value(3);
                   report "WRITESET mstatus CSR";
 
                when CSR_WRITECLEAR =>
-                  complete     <= '1';
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  complete <= '1';
+                  mpp(1)   <= mpp(1) AND NOT csr_value(12);
+                  mpie     <= mpie   AND NOT csr_value(7);
+                  mie      <= mie    AND NOT csr_value(3);
                   report "WRITECLEAR mstatus CSR";
 
                when CSR_READ     =>
-                  complete     <= '1';
-                  result       <= stored_value;
+                  complete <= '1';
+                  result   <= stored_value;
                   report "READ mstatus CSR";
 
                when CSR_READWRITE =>
-                  complete     <= '1';
-                  result       <= stored_value;
-                  stored_value <= CSR_VALUE;
+                  complete <= '1';
+                  result   <= stored_value;
+                  mpp(1)   <= csr_value(12);
+                  mpie     <= csr_value(7);
+                  mie      <= csr_value(3);
                   report "READWRITE mstatus CSR";
 
                when CSR_READWRITESET =>
-                  complete     <= '1';
-                  result       <= stored_value;
-                  stored_value <= stored_value OR CSR_VALUE;
+                  complete <= '1';
+                  result   <= stored_value;
+                  mpp(1)   <= mpp(1) OR csr_value(12);
+                  mpie     <= mpie   OR csr_value(7);
+                  mie      <= mie    OR csr_value(3);
                   report "READWRITESET mstatus CSR";
 
                when CSR_READWRITECLEAR =>
-                  complete     <= '1';
-                  result       <= stored_value;
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  complete <= '1';
+                  result   <= stored_value;
+                  mpp(1)   <= mpp(1) AND NOT csr_value(12);
+                  mpie     <= mpie   AND NOT csr_value(7);
+                  mie      <= mie    AND NOT csr_value(3);
                   report "READWRITECLEAR mstatus CSR";
 
                when others   =>

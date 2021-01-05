@@ -45,8 +45,8 @@ entity csr_342_mcause is
          csr_failed   : out STD_LOGIC;  
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         cause        : in  STD_LOGIC_VECTOR(31 downto 0);
-         cause_set    : in  STD_LOGIC
+         m_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_cause_set  : in  STD_LOGIC
   ); 
 end entity;
 
@@ -114,8 +114,8 @@ process(clk)
             end case;
          end if;
 
-         if cause_set = '1' then
-            stored_value <= cause;
+         if m_cause_set = '1' then
+            stored_value <= m_cause;
          end if;
       end if;
    end process;

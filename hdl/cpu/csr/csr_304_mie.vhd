@@ -43,7 +43,10 @@ entity csr_304_mie is
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_complete : out STD_LOGIC;  
          csr_failed   : out STD_LOGIC;  
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         m_eip        : in  STD_LOGIC;  
+         m_tip        : in  STD_LOGIC;  
+         m_sip        : in  STD_LOGIC); 
 end entity;
 
 architecture Behavioral of csr_304_mie is
@@ -51,10 +54,28 @@ architecture Behavioral of csr_304_mie is
    signal failed       : std_logic := '0';
    signal result       : std_logic_vector(31 downto 0) := (others => '0');
    signal stored_value : std_logic_vector(31 downto 0) := (others => '0');
+
+   signal wpri         : std_logic := '0'; -- Hardwire zero
+   signal meip         : std_logic := '0'; -- M external interrupt pending
+   signal seip         : std_logic := '0'; -- Hardwire zero
+   signal ueip         : std_logic := '0'; -- Hardwire zero
+   signal mtip         : std_logic := '0'; -- M timer interrupt pending
+   signal stip         : std_logic := '0'; -- Hardwire zero
+   signal utip         : std_logic := '0'; -- Hardwire zero
+   signal msip         : std_logic := '0'; -- M Software interrupt pending
+   signal ssip         : std_logic := '0'; -- Hardwire zero
+   signal usip         : std_logic := '0'; -- Hardwire zero
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
    csr_result   <= result;
+   meip <= m_eip;
+   mtip <= m_tip;
+   msip <= m_sip;
+
+   stored_value <= wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri
+                 & wpri & wpri & wpri & wpri & meip & wpri & seip & ueip & mtip & wpri & stip & utip & msip & wpri & ssip & usip;
+
 
 process(clk) 
    begin
@@ -69,17 +90,17 @@ process(clk)
 
                when CSR_WRITE =>
                   complete     <= '1';
-                  stored_value <= CSR_VALUE;
+                  -- WARL with external status
                   report "WRITE mie CSR";
 
                when CSR_WRITESET =>
                   complete     <= '1';
-                  stored_value <= stored_value OR CSR_VALUE;
+                  -- WARL with external status
                   report "WRITESET mie CSR";
 
                when CSR_WRITECLEAR =>
                   complete     <= '1';
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  -- WARL with external status
                   report "WRITECLEAR mie CSR";
 
                when CSR_READ     =>
@@ -90,19 +111,19 @@ process(clk)
                when CSR_READWRITE =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= CSR_VALUE;
+                  -- WARL with external status
                   report "READWRITE mie CSR";
 
                when CSR_READWRITESET =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= stored_value OR CSR_VALUE;
+                  -- WARL with external status
                   report "READWRITESET mie CSR";
 
                when CSR_READWRITECLEAR =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  -- WARL with external status
                   report "READWRITECLEAR mie CSR";
 
                when others   =>

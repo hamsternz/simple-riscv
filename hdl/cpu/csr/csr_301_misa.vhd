@@ -50,7 +50,7 @@ architecture Behavioral of csr_301_misa is
    signal complete     : std_logic := '0';
    signal failed       : std_logic := '0';
    signal result       : std_logic_vector(31 downto 0) := (others => '0');
-   signal stored_value : std_logic_vector(31 downto 0) := (others => '0');
+   signal stored_value : std_logic_vector(31 downto 0) := x"00000100"; -- Only the 'I' extension
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
@@ -90,19 +90,19 @@ process(clk)
                when CSR_READWRITE =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= CSR_VALUE;
+                  -- misa is WARL, with only one legal value! 
                   report "READWRITE misa CSR";
 
                when CSR_READWRITESET =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= stored_value OR CSR_VALUE;
+                  -- misa is WARL, with only one legal value! 
                   report "READWRITESET misa CSR";
 
                when CSR_READWRITECLEAR =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  -- misa is WARL, with only one legal value! 
                   report "READWRITECLEAR misa CSR";
 
                when others   =>

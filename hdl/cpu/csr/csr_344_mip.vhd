@@ -43,7 +43,11 @@ entity csr_344_mip is
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_complete : out STD_LOGIC;  
          csr_failed   : out STD_LOGIC;  
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+         m_eie        : out STD_LOGIC;
+         m_tie        : out STD_LOGIC;
+         m_sie        : out STD_LOGIC);
 end entity;
 
 architecture Behavioral of csr_344_mip is
@@ -51,10 +55,29 @@ architecture Behavioral of csr_344_mip is
    signal failed       : std_logic := '0';
    signal result       : std_logic_vector(31 downto 0) := (others => '0');
    signal stored_value : std_logic_vector(31 downto 0) := (others => '0');
+
+   signal wpri         : std_logic := '0'; -- Hardwire zero
+   signal meie         : std_logic := '0'; -- M external interrupt enable
+   signal seie         : std_logic := '0'; -- Hardwire zero
+   signal ueie         : std_logic := '0'; -- Hardwire zero
+   signal mtie         : std_logic := '0'; -- M timer interrupt enable
+   signal stie         : std_logic := '0'; -- Hardwire zero
+   signal utie         : std_logic := '0'; -- Hardwire zero
+   signal msie         : std_logic := '0'; -- M Software interrupt enable
+   signal ssie         : std_logic := '0'; -- Hardwire zero
+   signal usie         : std_logic := '0'; -- Hardwire zero
+
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
    csr_result   <= result;
+
+   m_eie        <= meie;
+   m_tie        <= mtie;
+   m_sie        <= msie;
+
+   stored_value <= wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri & wpri
+	         & wpri & wpri & wpri & wpri & meie & wpri & seie & ueie & mtie & wpri & stie & utie & msie & wpri & ssie & usie;
 
 process(clk) 
    begin
@@ -65,48 +88,60 @@ process(clk)
          if csr_active = '1' and complete = '0' and failed = '0' then
            case csr_mode is 
                when CSR_NOACTION =>
-                  complete    <= '1';
+                  complete <= '1';
 
                when CSR_WRITE =>
-                  complete     <= '1';
-                  stored_value <= CSR_VALUE;
+                  complete <= '1';
+                  msie     <= csr_value( 3);
+                  mtie     <= csr_value( 7);
+                  meie     <= csr_value(11);
                   report "WRITE mie CSR";
 
                when CSR_WRITESET =>
-                  complete     <= '1';
-                  stored_value <= stored_value OR CSR_VALUE;
+                  complete <= '1';
+                  msie     <= msie OR csr_value( 3);
+                  mtie     <= mtie OR csr_value( 7);
+                  meie     <= meie OR csr_value(11);
                   report "WRITESET mie CSR";
 
                when CSR_WRITECLEAR =>
-                  complete     <= '1';
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  complete <= '1';
+                  msie     <= msie AND NOT csr_value( 3);
+                  mtie     <= mtie AND NOT csr_value( 7);
+                  meie     <= meie AND NOT csr_value(11);
                   report "WRITECLEAR mie CSR";
 
                when CSR_READ     =>
-                  complete     <= '1';
-                  result       <= stored_value;
+                  complete <= '1';
+                  result   <= stored_value;
                   report "READ mie CSR";
 
                when CSR_READWRITE =>
-                  complete     <= '1';
-                  result       <= stored_value;
-                  stored_value <= CSR_VALUE;
+                  complete <= '1';
+                  result   <= stored_value;
+                  msie     <= csr_value( 3);
+                  mtie     <= csr_value( 7);
+                  meie     <= csr_value(11);
                   report "READWRITE mie CSR";
 
                when CSR_READWRITESET =>
-                  complete     <= '1';
-                  result       <= stored_value;
-                  stored_value <= stored_value OR CSR_VALUE;
+                  complete <= '1';
+                  result   <= stored_value;
+                  msie     <= msie OR csr_value( 3);
+                  mtie     <= mtie OR csr_value( 7);
+                  meie     <= meie OR csr_value(11);
                   report "READWRITESET mie CSR";
 
                when CSR_READWRITECLEAR =>
-                  complete     <= '1';
-                  result       <= stored_value;
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  complete <= '1';
+                  result   <= stored_value;
+                  msie     <= msie AND NOT csr_value( 3);
+                  mtie     <= mtie AND NOT csr_value( 7);
+                  meie     <= meie AND NOT csr_value(11);
                   report "READWRITECLEAR mie CSR";
 
                when others   =>
-                  failed      <= '1';
+                  failed   <= '1';
             end case;
          end if;
       end if;

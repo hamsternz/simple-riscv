@@ -45,8 +45,8 @@ entity csr_341_mepc   is
          csr_failed   : out STD_LOGIC;  
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         epc          : in  STD_LOGIC_VECTOR(31 downto 0);
-         epc_set      : in  STD_LOGIC
+         m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_epc_set    : in  STD_LOGIC
   ); 
 end entity;
 
@@ -114,8 +114,8 @@ process(clk)
             end case;
          end if;
 
-         if epc_set = '1' then
-            stored_value <= epc;
+         if m_epc_set = '1' then
+            stored_value <= m_epc;
          end if;
       end if;
    end process;

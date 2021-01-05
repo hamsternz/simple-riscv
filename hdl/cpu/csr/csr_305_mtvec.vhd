@@ -43,7 +43,9 @@ entity csr_305_mtvec is
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_complete : out STD_LOGIC;  
          csr_failed   : out STD_LOGIC;  
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+         m_tvec_flag  : out STD_LOGIC); 
 end entity;
 
 architecture Behavioral of csr_305_mtvec is
@@ -55,6 +57,8 @@ begin
    csr_complete <= complete;
    csr_failed   <= failed;
    csr_result   <= result;
+   m_tvec_base  <= stored_value(31 downto 2) & "00";
+   m_tvec_flag  <= stored_value(0);
 
 process(clk) 
    begin
@@ -69,17 +73,20 @@ process(clk)
 
                when CSR_WRITE =>
                   complete     <= '1';
-                  stored_value <= CSR_VALUE;
+                  stored_value(31 downto 2) <= csr_value(31 downto 2);
+                  stored_value( 0 downto 0) <= csr_value( 0 downto 0);
                   report "WRITE mtvec CSR";
 
                when CSR_WRITESET =>
                   complete     <= '1';
-                  stored_value <= stored_value OR CSR_VALUE;
+                  stored_value(31 downto 2) <= stored_value(31 downto 2) OR csr_value(31 downto 2);
+                  stored_value( 0 downto 0) <= stored_value( 0 downto 0) OR csr_value( 0 downto 0);
                   report "WRITESET mtvec CSR";
 
                when CSR_WRITECLEAR =>
                   complete     <= '1';
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  stored_value(31 downto 2) <= stored_value(31 downto 2) AND NOT csr_value(31 downto 2);
+                  stored_value( 0 downto 0) <= stored_value( 0 downto 0) AND NOT csr_value( 0 downto 0);
                   report "WRITECLEAR mtvec CSR";
 
                when CSR_READ     =>
@@ -90,19 +97,22 @@ process(clk)
                when CSR_READWRITE =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= CSR_VALUE;
+                  stored_value(31 downto 2) <= CSR_VALUE(31 downto 2);
+                  stored_value( 0 downto 0) <= csr_value( 0 downto 0);
                   report "READWRITE mtvec CSR";
 
                when CSR_READWRITESET =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= stored_value OR CSR_VALUE;
+                  stored_value(31 downto 2) <= stored_value(31 downto 2) OR csr_value(31 downto 2);
+                  stored_value( 0 downto 0) <= stored_value( 0 downto 0) OR csr_value( 0 downto 0);
                   report "READWRITESET mtvec CSR";
 
                when CSR_READWRITECLEAR =>
                   complete     <= '1';
                   result       <= stored_value;
-                  stored_value <= stored_value AND NOT CSR_VALUE;
+                  stored_value(31 downto 2) <= stored_value(31 downto 2) AND NOT csr_value(31 downto 2);
+                  stored_value( 0 downto 0) <= stored_value( 0 downto 0) AND NOT csr_value( 0 downto 0);
                   report "READWRITECLEAR mtvec CSR";
 
                when others   =>
