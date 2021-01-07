@@ -82,6 +82,8 @@ begin
                           OR exec_except_store_access;
 
    -- Note - priority encoder
+   -- Note INSTR_MISALIGNED and CAUSE_INSTR_ACCESS_FAULT must have priority over CAUSE_BREAKPOINT 
+   -- Because a missaligned instruction is also an illegal instruction 
    cause_code           <= (others=>'0') when reset = '1' else
                             CAUSE_INSTR_MISALIGNED      when exec_except_instr_misaligned = '1' else
                             CAUSE_INSTR_ACCESS_FAULT    when exec_except_instr_access     = '1' else
