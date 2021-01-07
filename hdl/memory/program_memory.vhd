@@ -209,6 +209,9 @@ architecture Behavioral of program_memory is
          124    =>      "001000000000" & "00010" & "110" & "00010" & "0010011",  -- ORI  r02 <= r02 | 0x200
          125    =>      "111111111111" & "00000" & "000" & "00000" & "1111110",  -- Invalid instruction - should jump to 0xF0000200
         
+         128    =>      "001101000010" & "00000" & "010" & "00101" & "1110011",  -- CSRRS r05 <= CSR[0x342] (mcasue), should be 02
+         129    =>      "001101000001" & "00000" & "010" & "00101" & "1110011",  -- CSRRS r05 <= CSR[0x341] (mepc), should be 0xF0001F4
+--       130
          --- CSRRS
          --- CSRRC
          --  CSRRWI

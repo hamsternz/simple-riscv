@@ -873,9 +873,28 @@ process
                 assert debug_pc /= x"F00001F8" report "FAIL: pc should not get to 0xF00001F8" severity FAILURE;
             when x"F00001FC" =>                  
                 assert debug_pc /= x"F00001FC" report "FAIL: pc should not get to 0xF00001FC" severity FAILURE;
+
             when x"F0000200" =>                  
+                -- Target of exception
+
+            when x"F0000204" =>                  
+                -- CSRRS r05 <= CSR[0x342] (mcause), should be 02
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                print("128: CSRRW r05, 0x342, r00");
+                assert debug_data = x"00000002" report "FAIL: register r05 not 0x00000002" severity FAILURE;
+
+            when x"F0000208" =>
+                -- CSRRS r05 <= CSR[0x341] (mepc) should be 0xF00001F4
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                print("129: CSRRW r05, 0x341, r00");
+                assert debug_data = x"F00001F4" report "FAIL: register r05 not 0xF00001F4" severity FAILURE;
+
+            when x"F000020C" =>
                 print("All tests complete");
                 wait;
+
             when x"effffff0" =>
             when x"effffff4" =>
             when x"effffff8" =>
