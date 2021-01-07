@@ -864,7 +864,11 @@ process
                 print("120: CSRRW r02, 0x305, r02");
                 assert debug_data = x"00000000" report "FAIL: register r02 not 0x00000000" severity FAILURE;
             when x"F00001F4" =>                  
-                assert debug_pc /= x"F00001F4" report "FAIL: pc should not get to 0xF00001F4" severity FAILURE;
+                -- ORI r02, 0x200
+                debug_sel   <= "00010";
+                wait for 0.5 ns;
+                print("121: ORI r02, 0x200");
+                assert debug_data = x"00000200" report "FAIL: register r02 not 0x00000200" severity FAILURE;
             when x"F00001F8" =>                  
                 assert debug_pc /= x"F00001F8" report "FAIL: pc should not get to 0xF00001F8" severity FAILURE;
             when x"F00001FC" =>                  

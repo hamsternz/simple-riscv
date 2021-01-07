@@ -10,6 +10,7 @@ read_vhdl ../../hdl/cpu/exec/program_counter.vhd
 read_vhdl ../../hdl/cpu/exec/data_bus_mux_a.vhd
 read_vhdl ../../hdl/cpu/exec/alu.vhd
 read_vhdl ../../hdl/cpu/exec/csr_unit.vhd
+read_vhdl ../../hdl/cpu/intex/intex_unit.vhd
 read_vhdl ../../hdl/cpu/exec/exec_unit.vhd
 read_vhdl ../../hdl/cpu/exec/loadstore_unit_pipelined.vhd
 read_vhdl ../../hdl/cpu/exec/sign_extender.vhd
@@ -23,7 +24,6 @@ read_vhdl ../../hdl/cpu/csr/csr_300_mstatus.vhd
 read_vhdl ../../hdl/cpu/csr/csr_301_misa.vhd
 read_vhdl ../../hdl/cpu/csr/csr_304_mie.vhd
 read_vhdl ../../hdl/cpu/csr/csr_305_mtvec.vhd
-read_vhdl ../../hdl/cpu/csr/csr_344_mip.vhd
 read_vhdl ../../hdl/cpu/csr/csr_340_mscratch.vhd
 read_vhdl ../../hdl/cpu/csr/csr_341_mepc.vhd
 read_vhdl ../../hdl/cpu/csr/csr_342_mcause.vhd
