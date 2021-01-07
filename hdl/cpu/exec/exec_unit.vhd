@@ -82,9 +82,18 @@ entity exec_unit is
            exec_instr_failed         : out STD_LOGIC                      := '0';
            exec_flush_required       : out STD_LOGIC                      := '0';
            exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
-           exec_exception            : out STD_LOGIC                      := '0';
-           exec_exception_cause      : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
+           -- For signalling exceptions
+           exec_except_instr_misaligned : out std_logic := '0';
+           exec_except_instr_access     : out std_logic := '0';
+           exec_except_illegal_instr    : out std_logic := '0';
+           exec_except_breakpoint       : out std_logic := '0';
+           exec_except_load_misaligned  : out std_logic := '0';
+           exec_except_load_access      : out std_logic := '0';
+           exec_except_store_misaligned : out std_logic := '0';
+           exec_except_store_access     : out std_logic := '0';
+
+           -- Signals in / out of the CSR unit
            m_ie         : out STD_LOGIC;
            m_eie        : out STD_LOGIC;
            m_tie        : out STD_LOGIC;

@@ -40,29 +40,19 @@ entity decode_unit is
     Port (  clk                       : in  STD_LOGIC;
             reset                     : in  STD_LOGIC;
 
+            -- From the exec unit
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
-            exec_exception            : in  STD_LOGIC;
-            exec_exception_cause      : in  STD_LOGIC_VECTOR (31 downto 0);
+
+            -- From the interrupt/exception unit
+            intex_exception_raise     : in  STD_LOGIC;
+            intex_exception_cause     : in  STD_LOGIC_VECTOR (31 downto 0);
+            intex_exception_vector    : in  STD_LOGIC_VECTOR (31 downto 0);
 
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
             fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
-
-            -- From the CSR Unit
-            -- Interupt enable
-            m_ie         : in  STD_LOGIC;
-
-            -- Interrupt enable (external, timer, software)
-            m_eie        : in  STD_LOGIC;
-            m_tie        : in  STD_LOGIC;
-            m_sie        : in  STD_LOGIC;
-
-            -- Trap vectoring
-            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
-            m_tvec_flag  : in  STD_LOGIC;
-
 
             -- To the exec unit
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -127,7 +117,7 @@ architecture Behavioral of decode_unit is
     -- Exception handling/Interrupts
     signal raise_exception : STD_LOGIC;    
 begin
-   raise_exception <= reset or exec_exception;
+   raise_exception <= reset or intex_exception_raise;
 
    with fetch_opcode(31) select instr31 <= x"FFFFFFFF" when '1', x"00000000" when others;
 
@@ -642,13 +632,13 @@ process(clk)
                     decode_rdest              <= "00000";
                     decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
                     decode_pc_mode            <= PC_JMP_REG_RELATIVE;
-                    decode_mcause             <= exec_exception_cause;
+                    decode_mcause             <= intex_exception_cause;
                     decode_is_exception       <= '1';
                     if reset = '1'  then
                         decode_pc_jump_offset <= x"F0000000";
                     else
                         -- TODO - vectored and unvectored
-                        decode_pc_jump_offset <= std_logic_Vector(unsigned(m_tvec_base) + unsigned(exec_exception_cause(29 downto 0)&"00"));
+                        decode_pc_jump_offset <= intex_exception_vector;
                     end if;
                 end if;
             end if;

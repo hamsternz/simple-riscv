@@ -90,24 +90,13 @@ architecture Behavioral of riscv_cpu is
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
-            exec_exception            : in  STD_LOGIC;
-            exec_exception_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
             -- To the exec unit
             reset                     : in  STD_LOGIC;
 
-            -- From the CSR Unit
-            -- Interupt enable
-            m_ie         : in  STD_LOGIC;
-
-            -- Interrupt enable (external, timer, software)
-            m_eie        : in  STD_LOGIC;
-            m_tie        : in  STD_LOGIC;
-            m_sie        : in  STD_LOGIC;
-
-            -- Trap vectoring
-            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
-            m_tvec_flag  : in  STD_LOGIC;
-
+            -- From the interrupt/exception unit
+            intex_exception_raise     : in  STD_LOGIC;
+            intex_exception_cause     : in  STD_LOGIC_VECTOR (31 downto 0);
+            intex_exception_vector    : in  STD_LOGIC_VECTOR (31 downto 0);
 
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -246,8 +235,6 @@ architecture Behavioral of riscv_cpu is
             exec_instr_failed         : out STD_LOGIC;
             exec_flush_required       : out STD_LOGIC;
             exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0);
-            exec_exception            : out STD_LOGIC;
-            exec_exception_cause      : out STD_LOGIC_VECTOR(31 downto 0);
 
             bus_busy      : in  STD_LOGIC;
             bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
@@ -257,7 +244,17 @@ architecture Behavioral of riscv_cpu is
             bus_enable    : out STD_LOGIC;
             bus_din       : in  STD_LOGIC_VECTOR(31 downto 0);
 
-            -- From the CSR Unit
+            -- To the intex unit
+            exec_except_instr_misaligned : out std_logic;
+            exec_except_instr_access     : out std_logic;
+            exec_except_illegal_instr    : out std_logic;
+            exec_except_breakpoint       : out std_logic;
+            exec_except_load_misaligned  : out std_logic;
+            exec_except_load_access      : out std_logic;
+            exec_except_store_misaligned : out std_logic;
+            exec_except_store_access     : out std_logic;
+
+            -- From the internal CSR Unit to the outside world
             -- Interupt enable
             m_ie          : out STD_LOGIC;
 
@@ -285,8 +282,6 @@ architecture Behavioral of riscv_cpu is
     signal exec_instr_failed    : STD_LOGIC;
     signal exec_flush_required  : STD_LOGIC;
     signal exec_current_pc      : STD_LOGIC_VECTOR (31 downto 0);
-    signal exec_exception       : STD_LOGIC;
-    signal exec_exception_cause : STD_LOGIC_VECTOR(31 downto 0);
     signal m_ie                 : STD_LOGIC;
     signal m_eie                : STD_LOGIC;
     signal m_tie                : STD_LOGIC;
@@ -296,6 +291,50 @@ architecture Behavioral of riscv_cpu is
     signal m_sip                : STD_LOGIC;
     signal m_tvec_base          : STD_LOGIC_VECTOR(31 downto 0);
     signal m_tvec_flag          : STD_LOGIC;
+
+    component intex_unit is
+    Port (  clk                       : in  STD_LOGIC;
+            reset                     : in  STD_LOGIC;
+
+            intex_exception_raise     : out STD_LOGIC;
+            intex_exception_cause     : out STD_LOGIC_VECTOR (31 downto 0);
+            intex_exception_vector    : out STD_LOGIC_VECTOR (31 downto 0);
+
+            exec_except_instr_misaligned : in std_logic;
+            exec_except_instr_access     : in std_logic;
+            exec_except_illegal_instr    : in std_logic;
+            exec_except_breakpoint       : in std_logic;
+            exec_except_load_misaligned  : in std_logic;
+            exec_except_load_access      : in std_logic;
+            exec_except_store_misaligned : in std_logic;
+            exec_except_store_access     : in std_logic;
+
+            -----------------------------
+            -- From the CSR Unit
+            -----------------------------
+            m_ie         : in  STD_LOGIC;
+
+            -- Interrupt enable (external, timer, software)
+            m_eie        : in  STD_LOGIC;
+            m_tie        : in  STD_LOGIC;
+            m_sie        : in  STD_LOGIC;
+
+            -- Trap vectoring
+            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
+            m_tvec_flag  : in  STD_LOGIC);
+    end component;
+    signal intex_exception_raise        : STD_LOGIC;
+    signal intex_exception_cause        : STD_LOGIC_VECTOR (31 downto 0);
+    signal intex_exception_vector       : STD_LOGIC_VECTOR (31 downto 0);
+
+    signal exec_except_instr_misaligned : std_logic := '0';
+    signal exec_except_instr_access     : std_logic := '0';
+    signal exec_except_illegal_instr    : std_logic := '0';
+    signal exec_except_breakpoint       : std_logic := '0';
+    signal exec_except_load_misaligned  : std_logic := '0';
+    signal exec_except_load_access      : std_logic := '0';
+    signal exec_except_store_misaligned : std_logic := '0';
+    signal exec_except_store_access     : std_logic := '0';
 
 begin
 
@@ -318,34 +357,28 @@ fetch: fetch_unit port map (
     );
     
 decode: decode_unit port map (
-        clk                   => clk,
-        reset                 => reset,
+        clk                       => clk,
+        reset                     => reset,
 
-        m_ie                  => m_ie,
-        m_eie                 => m_eie,
-        m_tie                 => m_tie,
-        m_sie                 => m_sie,
-        m_tvec_base           => m_tvec_base,
-        m_tvec_flag           => m_tvec_flag,
+        intex_exception_raise     => intex_exception_raise,
+        intex_exception_cause     => intex_exception_cause,
+        intex_exception_vector    => intex_exception_vector,
 
+        exec_instr_completed      => exec_instr_completed,
+        exec_instr_failed         => exec_instr_failed,
+        exec_flush_required       => exec_flush_required,
 
-        exec_instr_completed  => exec_instr_completed,
-        exec_instr_failed     => exec_instr_failed,
-        exec_flush_required   => exec_flush_required,
-        exec_exception        => exec_exception,
-        exec_exception_cause  => exec_exception_cause,
-
-        fetch_opcode          => fetch_opcode,
-        fetch_addr            => fetch_addr,
+        fetch_opcode              => fetch_opcode,
+        fetch_addr                => fetch_addr,
         -- To the exec unit
-        decode_addr           => decode_addr,
-        decode_immed          => decode_immed,         
+        decode_addr               => decode_addr,
+        decode_immed              => decode_immed,         
         
-        decode_reg_a          => decode_reg_a,
-        decode_select_a       => decode_select_a,
+        decode_reg_a              => decode_reg_a,
+        decode_select_a           => decode_select_a,
 
-        decode_reg_b          => decode_reg_b, 
-        decode_select_b       => decode_select_b,
+        decode_reg_b              => decode_reg_b, 
+        decode_select_b           => decode_select_b,
 
         decode_jump_enable        => decode_jump_enable,
         decode_pc_mode            => decode_pc_mode,
@@ -437,8 +470,16 @@ exec: exec_unit port map (
         exec_instr_failed         => exec_instr_failed,
         exec_flush_required       => exec_flush_required,
         exec_current_pc           => exec_current_pc,
-        exec_exception            => exec_exception,
-        exec_exception_cause      => exec_exception_cause,
+
+        exec_except_instr_misaligned => exec_except_instr_misaligned,
+        exec_except_instr_access     => exec_except_instr_access,
+        exec_except_illegal_instr    => exec_except_illegal_instr,
+        exec_except_breakpoint       => exec_except_breakpoint,
+        exec_except_load_misaligned  => exec_except_load_misaligned,
+        exec_except_load_access      => exec_except_load_access,
+        exec_except_store_misaligned => exec_except_store_misaligned,
+        exec_except_store_access     => exec_except_store_access,
+
         --===============================================    
         bus_busy                  => bus_busy,
         bus_addr                  => bus_addr,
@@ -452,5 +493,29 @@ exec: exec_unit port map (
         debug_sel                 => debug_sel,
         debug_data                => debug_data               
     );
+
+i_intex_unit: intex_unit port map (
+        clk                          => clk,
+        reset                        => reset,
+
+        intex_exception_raise        => intex_exception_raise,
+        intex_exception_cause        => intex_exception_cause,
+        intex_exception_vector       => intex_exception_vector,
+
+        exec_except_instr_misaligned => exec_except_instr_misaligned,
+        exec_except_instr_access     => exec_except_instr_access,
+        exec_except_illegal_instr    => exec_except_illegal_instr,
+        exec_except_breakpoint       => exec_except_breakpoint,
+        exec_except_load_misaligned  => exec_except_load_misaligned,
+        exec_except_load_access      => exec_except_load_access,
+        exec_except_store_misaligned => exec_except_store_misaligned,
+        exec_except_store_access     => exec_except_store_access,
+
+        m_ie                         => m_ie,
+        m_eie                        => m_eie,
+        m_tie                        => m_tie,
+        m_sie                        => m_sie,
+        m_tvec_base                  => m_tvec_base,
+        m_tvec_flag                  => m_tvec_flag);
 
 end Behavioral;
