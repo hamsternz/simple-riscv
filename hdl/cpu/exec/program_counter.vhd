@@ -57,6 +57,7 @@ architecture Behavioral of program_counter is
    signal next_instr   : unsigned(31 downto 0);
 begin
     jump_complete <= jump_active;
+    jump_failed   <= '0';
     pc           <= std_logic_vector(current_pc);
     pc_plus_four <= std_logic_vector(current_pc + 4);
 

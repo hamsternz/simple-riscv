@@ -90,6 +90,7 @@ architecture Behavioral of riscv_cpu is
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
+
             -- To the exec unit
             reset                     : in  STD_LOGIC;
 
@@ -141,13 +142,21 @@ architecture Behavioral of riscv_cpu is
             decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 
+            decode_instr_misaligned   : out std_logic := '0';
+            decode_instr_access       : out std_logic := '0';
+            decode_breakpoint         : out std_logic := '0';
+
             decode_force_complete     : out STD_LOGIC := '0';
             decode_is_exception       : out STD_LOGIC;
+
             decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
             );            
     end component;    
     
     signal decode_force_complete     : STD_LOGIC;
+    signal decode_instr_misaligned   : std_logic;
+    signal decode_instr_access       : std_logic;
+    signal decode_breakpoint         : std_logic;
 
     signal decode_addr               : STD_LOGIC_VECTOR (31 downto 0);
     signal decode_immed              : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -225,7 +234,11 @@ architecture Behavioral of riscv_cpu is
             decode_shift_mode         : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
         
             decode_result_src         : in  STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
-            decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
+            decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+                        
+            decode_instr_misaligned   : in std_logic;
+            decode_instr_access       : in std_logic;
+            decode_breakpoint         : in std_logic;
 
             decode_force_complete     : in  STD_LOGIC;
             decode_is_exception       : in  STD_LOGIC;
@@ -407,6 +420,10 @@ decode: decode_unit port map (
         decode_result_src         => decode_result_src,          
         decode_rdest              => decode_rdest,
 
+        decode_instr_misaligned   => decode_instr_misaligned,
+        decode_instr_access       => decode_instr_access,
+        decode_breakpoint         => decode_breakpoint,
+
         decode_force_complete     => decode_force_complete,
         decode_is_exception       => decode_is_exception,
         decode_mcause             => decode_mcause
@@ -429,6 +446,10 @@ exec: exec_unit port map (
         decode_force_complete     => decode_force_complete,
         decode_is_exception       => decode_is_exception,
         decode_mcause             => decode_mcause,
+
+        decode_instr_misaligned   => decode_instr_misaligned,
+        decode_instr_access       => decode_instr_access,
+        decode_breakpoint         => decode_breakpoint,
 
         decode_addr               => decode_addr,
         decode_immed              => decode_immed,         

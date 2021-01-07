@@ -40,6 +40,10 @@ entity loadstore_unit is
             loadstore_active          : in  STD_LOGIC;
             loadstore_complete        : out STD_LOGIC;
             loadstore_failed          : out STD_LOGIC;
+            loadstore_except_load_misaligned  : out std_logic := '0';
+            loadstore_except_load_access      : out std_logic := '0';
+            loadstore_except_store_misaligned : out std_logic := '0';
+            loadstore_except_store_access     : out std_logic := '0';
 
             decode_loadstore_enable   : in  STD_LOGIC;
             decode_loadstore_write    : in  STD_LOGIC;
@@ -90,6 +94,12 @@ begin
 -- AT THE COST OF MEMORY READ LATENCY
 --------------------------------------------
     loadstore_complete <= sign_ex_complete;
+    loadstore_failed   <= '0';
+    loadstore_except_load_misaligned  <= '0';
+    loadstore_except_load_access      <= '0';
+    loadstore_except_store_misaligned <= '0';
+    loadstore_except_store_access     <= '0';
+    
     sign_ex_data_in    <= bus_din;
     sign_ex_active     <= loadstore_active and not bus_busy;
 --------------------------------------------

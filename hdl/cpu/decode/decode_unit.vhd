@@ -93,6 +93,10 @@ entity decode_unit is
 
             decode_is_exception       : out STD_LOGIC;
             decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+
+            decode_instr_misaligned   : out std_logic := '0';
+            decode_instr_access       : out std_logic := '0';
+            decode_breakpoint         : out std_logic := '0';
             -- To allow interrupts to be forced
             decode_force_complete     : out STD_LOGIC := '0'); 
 end decode_unit;
@@ -117,6 +121,10 @@ architecture Behavioral of decode_unit is
     -- Exception handling/Interrupts
     signal raise_exception : STD_LOGIC;    
 begin
+   decode_instr_misaligned   <= '0';
+   decode_instr_access       <= '0';
+   decode_breakpoint         <= '0';
+
    raise_exception <= reset or intex_exception_raise;
 
    with fetch_opcode(31) select instr31 <= x"FFFFFFFF" when '1', x"00000000" when others;

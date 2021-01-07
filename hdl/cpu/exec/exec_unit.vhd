@@ -40,7 +40,11 @@ entity exec_unit is
            decode_force_complete     : in  STD_LOGIC;
            decode_is_exception       : in  STD_LOGIC;
            decode_mcause             : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-    
+           
+           decode_instr_misaligned   : in  std_logic := '0';
+           decode_instr_access       : in  std_logic := '0';
+           decode_breakpoint         : in  std_logic := '0';
+
            decode_addr               : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
            decode_immed              : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             
@@ -288,6 +292,11 @@ architecture Behavioral of exec_unit is
         loadstore_active          : in  STD_LOGIC;
         loadstore_complete        : out STD_LOGIC;
         loadstore_failed          : out STD_LOGIC;
+
+        loadstore_except_load_misaligned  : out std_logic := '0';
+        loadstore_except_load_access      : out std_logic := '0';
+        loadstore_except_store_misaligned : out std_logic := '0';
+        loadstore_except_store_access     : out std_logic := '0';
         
         data_a                    : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
         data_b                    : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -316,14 +325,10 @@ architecture Behavioral of exec_unit is
 begin
     -- Mapping internal exceptions to external ones
     exec_except_illegal_instr    <= unknown_instr;
-    exec_except_instr_misaligned <= '0';
-    exec_except_instr_access     <= '0';
-    exec_except_breakpoint       <= '0';
-    exec_except_load_misaligned  <= '0';
-    exec_except_load_access      <= '0';
-    exec_except_store_misaligned <= '0';
-    exec_except_store_access     <= '0';
- 
+    exec_except_instr_misaligned <= right_instr and decode_instr_misaligned;
+    exec_except_instr_access     <= right_instr and decode_instr_access;
+    exec_except_breakpoint       <= right_instr and decode_breakpoint;
+
     -- Managing the instrucion fetch misses
     right_instr         <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
 
@@ -456,6 +461,11 @@ i_loadstore: loadstore_unit port map (
      loadstore_active          => loadstore_active,
      loadstore_complete        => loadstore_complete,
      loadstore_failed          => loadstore_failed,
+
+     loadstore_except_load_misaligned  => exec_except_load_misaligned, 
+     loadstore_except_load_access      => exec_except_load_access,
+     loadstore_except_store_misaligned => exec_except_store_misaligned,
+     loadstore_except_store_access     => exec_except_store_access,
         
      data_a                    => reg_read_data_a,
      data_b                    => reg_read_data_b,
