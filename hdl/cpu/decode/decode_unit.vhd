@@ -51,10 +51,11 @@ entity decode_unit is
             intex_exception_vector    : in  STD_LOGIC_VECTOR (31 downto 0);
 
             -- from the fetch unit
-            fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
-            fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
+            fetch_opcode              : in STD_LOGIC_VECTOR (31 downto 0);
+            fetch_addr                : in STD_LOGIC_VECTOR (31 downto 0);
+            fetch_instr_misaligned    : in std_logic;
+            fetch_except_instr_access : in std_logic;
 
-            -- To the exec unit
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             decode_immed              : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             
@@ -96,6 +97,7 @@ entity decode_unit is
 
             decode_instr_misaligned   : out std_logic := '0';
             decode_instr_access       : out std_logic := '0';
+
             decode_breakpoint         : out std_logic := '0';
             -- To allow interrupts to be forced
             decode_force_complete     : out STD_LOGIC := '0'); 
@@ -121,9 +123,6 @@ architecture Behavioral of decode_unit is
     -- Exception handling/Interrupts
     signal raise_exception : STD_LOGIC;    
 begin
-   decode_instr_misaligned   <= '0';
-   decode_instr_access       <= '0';
-   decode_breakpoint         <= '0';
 
    raise_exception <= reset or intex_exception_raise;
 
@@ -149,6 +148,10 @@ process(clk)
         if rising_edge(clk) then
             if exec_instr_completed = '1' OR exec_flush_required = '1' then
     
+                decode_breakpoint         <= '0';
+                decode_instr_misaligned   <= fetch_instr_misaligned;
+                decode_instr_access       <= fetch_except_instr_access;
+
                  -- Set defaults for invalid instructions
                 decode_addr              <= fetch_addr;
                 decode_immed             <= immed_I;

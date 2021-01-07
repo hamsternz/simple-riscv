@@ -42,47 +42,52 @@ entity riscv_cpu is
           progmem_data       : in  STD_LOGIC_VECTOR(31 downto 0);
           progmem_data_valid : in  STD_LOGIC;
 
-          reset         : in  STD_LOGIC;
+          reset              : in  STD_LOGIC;
 
-          bus_busy      : in  STD_LOGIC;
-          bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
-          bus_width     : out STD_LOGIC_VECTOR(1 downto 0);  
-          bus_dout      : out STD_LOGIC_VECTOR(31 downto 0);
-          bus_write     : out STD_LOGIC;
-          bus_enable    : out STD_LOGIC;
-          bus_din       : in  STD_LOGIC_VECTOR(31 downto 0);
+          bus_busy           : in  STD_LOGIC;
+          bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
+          bus_width          : out STD_LOGIC_VECTOR(1 downto 0);  
+          bus_dout           : out STD_LOGIC_VECTOR(31 downto 0);
+          bus_write          : out STD_LOGIC;
+          bus_enable         : out STD_LOGIC;
+          bus_din            : in  STD_LOGIC_VECTOR(31 downto 0);
 
-          debug_pc      : out STD_LOGIC_VECTOR(31 downto 0);
-          debug_sel     : in  STD_LOGIC_VECTOR(4 downto 0);
-          debug_data    : out STD_LOGIC_VECTOR(31 downto 0)
+          debug_pc           : out STD_LOGIC_VECTOR(31 downto 0);
+          debug_sel          : in  STD_LOGIC_VECTOR(4 downto 0);
+          debug_data         : out STD_LOGIC_VECTOR(31 downto 0)
   );
 end riscv_cpu;
 
 architecture Behavioral of riscv_cpu is
     component fetch_unit is
-    Port ( clk                 : in  STD_LOGIC;
+    Port ( clk                       : in  STD_LOGIC;
            -- from the exec unit
-           exec_instr_completed : in  STD_LOGIC;
-           exec_flush_required  : in  STD_LOGIC;
-           exec_current_pc      : in  STD_LOGIC_VECTOR (31 downto 0);
+           exec_instr_completed      : in  STD_LOGIC;
+           exec_flush_required       : in  STD_LOGIC;
+           exec_current_pc           : in  STD_LOGIC_VECTOR (31 downto 0);
 
            -- to the decoder
-           fetch_opcode        : out STD_LOGIC_VECTOR (31 downto 0);
-           fetch_addr          : out STD_LOGIC_VECTOR (31 downto 0);
+           fetch_opcode              : out STD_LOGIC_VECTOR (31 downto 0);
+           fetch_addr                : out STD_LOGIC_VECTOR (31 downto 0);
+           fetch_instr_misaligned    : out std_logic := '0';
+           fetch_except_instr_access : out std_logic := '0';
+
 
            -- to the memory
-           progmem_enable      : out STD_LOGIC;
-           progmem_addr        : out STD_LOGIC_VECTOR (31 downto 0);
+           progmem_enable            : out STD_LOGIC;
+           progmem_addr              : out STD_LOGIC_VECTOR (31 downto 0);
 
-           progmem_data_addr  : in  STD_LOGIC_VECTOR(31 downto 0);
-           progmem_data        : in  STD_LOGIC_VECTOR (31 downto 0);
-           progmem_data_valid  : in  STD_LOGIC
+           progmem_data_addr         : in  STD_LOGIC_VECTOR(31 downto 0);
+           progmem_data              : in  STD_LOGIC_VECTOR (31 downto 0);
+           progmem_data_valid        : in  STD_LOGIC
        
            );
     end component;
 
-    signal fetch_opcode        : STD_LOGIC_VECTOR (31 downto 0);
-    signal fetch_addr          : STD_LOGIC_VECTOR (31 downto 0);
+    signal fetch_opcode              : STD_LOGIC_VECTOR (31 downto 0);
+    signal fetch_addr                : STD_LOGIC_VECTOR (31 downto 0);
+    signal fetch_instr_misaligned    : std_logic;
+    signal fetch_except_instr_access : std_logic;
 
     component decode_unit is
     Port (  clk                   : in  STD_LOGIC;
@@ -102,6 +107,9 @@ architecture Behavioral of riscv_cpu is
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
             fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
+            fetch_instr_misaligned    : in  std_logic := '0';
+            fetch_except_instr_access : in  std_logic := '0';
+
             -- To the exec unit
 
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -355,18 +363,20 @@ begin
 
     
 fetch: fetch_unit port map (
-        clk                   => clk,
-        exec_instr_completed  => exec_instr_completed,
-        exec_flush_required   => exec_flush_required,
-        exec_current_pc       => exec_current_pc,
-        fetch_opcode          => fetch_opcode,
-        fetch_addr            => fetch_addr,
+        clk                       => clk,
+        exec_instr_completed      => exec_instr_completed,
+        exec_flush_required       => exec_flush_required,
+        exec_current_pc           => exec_current_pc,
+        fetch_opcode              => fetch_opcode,
+        fetch_addr                => fetch_addr,
+        fetch_instr_misaligned    => fetch_instr_misaligned,
+        fetch_except_instr_access => fetch_except_instr_access,
 
-        progmem_enable        => progmem_enable,
-        progmem_addr          => progmem_addr,
-        progmem_data_addr     => progmem_data_addr,
-        progmem_data          => progmem_data,
-        progmem_data_valid    => progmem_data_valid
+        progmem_enable            => progmem_enable,
+        progmem_addr              => progmem_addr,
+        progmem_data_addr         => progmem_data_addr,
+        progmem_data              => progmem_data,
+        progmem_data_valid        => progmem_data_valid
     );
     
 decode: decode_unit port map (
@@ -381,8 +391,12 @@ decode: decode_unit port map (
         exec_instr_failed         => exec_instr_failed,
         exec_flush_required       => exec_flush_required,
 
+        -- From the fetch unit
         fetch_opcode              => fetch_opcode,
         fetch_addr                => fetch_addr,
+        fetch_instr_misaligned    => fetch_instr_misaligned,
+        fetch_except_instr_access => fetch_except_instr_access,
+
         -- To the exec unit
         decode_addr               => decode_addr,
         decode_immed              => decode_immed,         

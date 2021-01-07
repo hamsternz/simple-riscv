@@ -35,20 +35,23 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity fetch_unit is
-    Port ( clk            : in  STD_LOGIC;
+    Port ( clk                       : in  STD_LOGIC;
            -- from the exec unit
            exec_instr_completed      : in  STD_LOGIC;
-           exec_flush_required : in  STD_LOGIC;
-           exec_current_pc     : in  STD_LOGIC_VECTOR (31 downto 0);
+           exec_flush_required       : in  STD_LOGIC;
+           exec_current_pc           : in  STD_LOGIC_VECTOR (31 downto 0);
            -- to the decoder
-           fetch_opcode        : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
-           fetch_addr          : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+           fetch_opcode              : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+           fetch_addr                : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+           fetch_instr_misaligned    : out std_logic := '0';
+           fetch_except_instr_access : out std_logic := '0';
+
            -- to the memory
-           progmem_enable      : out STD_LOGIC                      := '1';
-           progmem_addr        : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
-           progmem_data_addr   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-           progmem_data        : in  STD_LOGIC_VECTOR (31 downto 0);
-           progmem_data_valid  : in  STD_LOGIC
+           progmem_enable            : out STD_LOGIC                      := '1';
+           progmem_addr              : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+           progmem_data_addr         : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+           progmem_data              : in  STD_LOGIC_VECTOR (31 downto 0);
+           progmem_data_valid        : in  STD_LOGIC
    );
 end fetch_unit;
 
