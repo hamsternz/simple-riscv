@@ -41,6 +41,11 @@ entity loadstore_unit is
             loadstore_complete        : out STD_LOGIC;
             loadstore_failed          : out STD_LOGIC := '0';
 
+            loadstore_except_load_misaligned  : out std_logic;
+            loadstore_except_load_access      : out std_logic;
+            loadstore_except_store_misaligned : out std_logic;
+            loadstore_except_store_access     : out std_logic;
+
             decode_loadstore_enable   : in  STD_LOGIC;
             decode_loadstore_write    : in  STD_LOGIC;
             decode_loadstore_offset   : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
@@ -78,6 +83,11 @@ architecture Behavioral of loadstore_unit is
     signal sign_ex_data_in  : STD_LOGIC_VECTOR(31 downto 0);
     
 begin
+    loadstore_except_load_misaligned  <= '0';
+    loadstore_except_load_access      <= '0';
+    loadstore_except_store_misaligned <= '0';
+    loadstore_except_store_access     <= '0';
+
     -- Set up the RAM address
     bus_write          <= decode_loadstore_write and not sign_ex_active;
     bus_enable         <= loadstore_active and not sign_ex_active;

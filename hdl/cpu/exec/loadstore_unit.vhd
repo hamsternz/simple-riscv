@@ -40,10 +40,11 @@ entity loadstore_unit is
             loadstore_active          : in  STD_LOGIC;
             loadstore_complete        : out STD_LOGIC;
             loadstore_failed          : out STD_LOGIC;
-            loadstore_except_load_misaligned  : out std_logic := '0';
-            loadstore_except_load_access      : out std_logic := '0';
-            loadstore_except_store_misaligned : out std_logic := '0';
-            loadstore_except_store_access     : out std_logic := '0';
+
+            loadstore_except_load_misaligned  : out std_logic;
+            loadstore_except_load_access      : out std_logic;
+            loadstore_except_store_misaligned : out std_logic;
+            loadstore_except_store_access     : out std_logic;
 
             decode_loadstore_enable   : in  STD_LOGIC;
             decode_loadstore_write    : in  STD_LOGIC;
