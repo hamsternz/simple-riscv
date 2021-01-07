@@ -318,7 +318,6 @@ begin
     exec_except_illegal_instr    <= unknown_instr;
     exec_except_instr_misaligned <= '0';
     exec_except_instr_access     <= '0';
-    exec_except_illegal_instr    <= '0';
     exec_except_breakpoint       <= '0';
     exec_except_load_misaligned  <= '0';
     exec_except_load_access      <= '0';

@@ -859,7 +859,7 @@ process
                 assert debug_data = x"F0000200" report "FAIL: register r02 not 0xF0000200" severity FAILURE;
             when x"F00001F0" =>                  
                 -- CSRRW r02, 0x305, r02
-                debug_sel   <= "00101";
+                debug_sel   <= "00010";
                 wait for 0.5 ns;
                 print("120: CSRRW r02, 0x305, r02");
                 assert debug_data = x"00000000" report "FAIL: register r02 not 0x00000000" severity FAILURE;
