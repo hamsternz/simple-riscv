@@ -102,7 +102,32 @@ package cpu_constants is
 
     constant EXCEPTION_NONE              : STD_LOGIC_VECTOR(2 downto 0) := "000";
     constant EXCEPTION_RESET             : STD_LOGIC_VECTOR(2 downto 0) := "001";
-    constant EXCEPTION_UNKNOWN_INSTR     : STD_LOGIC_VECTOR(2 downto 0) := "010";
+
+    -- Values for the mcause CSR
+    constant CAUSE_INSTR_MISALIGNED      : STD_LOGIC_VECTOR(31 downto 0) := x"00000000";
+    constant CAUSE_INSTR_ACCESS_FAULT    : STD_LOGIC_VECTOR(31 downto 0) := x"00000001";
+    constant CAUSE_ILLEGAL_INSTR         : STD_LOGIC_VECTOR(31 downto 0) := x"00000002";
+    constant CAUSE_BREAKPOINT            : STD_LOGIC_VECTOR(31 downto 0) := x"00000003";
+    constant CAUSE_LOAD_ADDR_MISALIGNED  : STD_LOGIC_VECTOR(31 downto 0) := x"00000004";
+    constant CAUSE_LOAD_ACCESS_FAULT     : STD_LOGIC_VECTOR(31 downto 0) := x"00000005";
+    constant CAUSE_STORE_ADDR_MISALIGNED : STD_LOGIC_VECTOR(31 downto 0) := x"00000006";
+    constant CAUSE_STORE_ACCESS_FAULT    : STD_LOGIC_VECTOR(31 downto 0) := x"00000007";
+    constant CAUSE_ENV_CALL_U_MODE       : STD_LOGIC_VECTOR(31 downto 0) := x"00000008";
+    constant CAUSE_ENV_CALL_S_MODE       : STD_LOGIC_VECTOR(31 downto 0) := x"00000009";
+    constant CAUSE_ENV_CALL_M_MODE       : STD_LOGIC_VECTOR(31 downto 0) := x"0000000B";
+    constant CAUSE_INSTR_PAGE_FAULT      : STD_LOGIC_VECTOR(31 downto 0) := x"0000000C";
+    constant CAUSE_LOAD_PAGE_FAULT       : STD_LOGIC_VECTOR(31 downto 0) := x"0000000D";
+    constant CAUSE_STORE_PAGE_FAULT      : STD_LOGIC_VECTOR(31 downto 0) := x"0000000F";
+
+    constant CAUSE_U_INTERRUPT_SOFTWARE  : STD_LOGIC_VECTOR(31 downto 0) := x"80000000";
+    constant CAUSE_S_INTERRUPT_SOFTWARE  : STD_LOGIC_VECTOR(31 downto 0) := x"80000001";
+    constant CAUSE_M_INTERRUPT_SOFTWARE  : STD_LOGIC_VECTOR(31 downto 0) := x"80000003";
+    constant CAUSE_U_INTERRUPT_TIMER     : STD_LOGIC_VECTOR(31 downto 0) := x"80000004";
+    constant CAUSE_S_INTERRUPT_TIMER     : STD_LOGIC_VECTOR(31 downto 0) := x"80000005";
+    constant CAUSE_M_INTERRUPT_TIMER     : STD_LOGIC_VECTOR(31 downto 0) := x"80000007";
+    constant CAUSE_U_INTERRUPT_EXTERNAL  : STD_LOGIC_VECTOR(31 downto 0) := x"80000008";
+    constant CAUSE_S_INTERRUPT_EXTERNAL  : STD_LOGIC_VECTOR(31 downto 0) := x"80000009";
+    constant CAUSE_M_INTERRUPT_EXTERNAL  : STD_LOGIC_VECTOR(31 downto 0) := x"8000000B";
 end package cpu_constants;
  
 package body cpu_constants is

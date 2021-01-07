@@ -43,9 +43,27 @@ entity decode_unit is
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
+            exec_exception            : in  STD_LOGIC;
+            exec_exception_cause      : in  STD_LOGIC_VECTOR (31 downto 0);
+
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
             fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
+
+            -- From the CSR Unit
+            -- Interupt enable
+            m_ie         : in  STD_LOGIC;
+
+            -- Interrupt enable (external, timer, software)
+            m_eie        : in  STD_LOGIC;
+            m_tie        : in  STD_LOGIC;
+            m_sie        : in  STD_LOGIC;
+
+            -- Trap vectoring
+            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
+            m_tvec_flag  : in  STD_LOGIC;
+
+
             -- To the exec unit
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             decode_immed              : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -83,8 +101,10 @@ entity decode_unit is
             decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 
+            decode_is_exception       : out STD_LOGIC;
+            decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
             -- To allow interrupts to be forced
-            decode_force_complete     : out STD_LOGIC := '0');            
+            decode_force_complete     : out STD_LOGIC := '0'); 
 end decode_unit;
 
 architecture Behavioral of decode_unit is
@@ -106,12 +126,8 @@ architecture Behavioral of decode_unit is
 
     -- Exception handling/Interrupts
     signal raise_exception : STD_LOGIC;    
-    signal exception       : STD_LOGIC_VECTOR(2 downto 0);
 begin
-   raise_exception <= reset or exec_instr_failed;
-   exception <= EXCEPTION_RESET         when reset = '1' else 
-                EXCEPTION_UNKNOWN_INSTR when exec_instr_failed = '1' else 
-                EXCEPTION_NONE;
+   raise_exception <= reset or exec_exception;
 
    with fetch_opcode(31) select instr31 <= x"FFFFFFFF" when '1', x"00000000" when others;
 
@@ -168,6 +184,9 @@ process(clk)
                 decode_shift_mode       <= SHIFTER_LEFT_LOGICAL;
                 decode_result_src       <= RESULT_ALU;         
                 decode_rdest            <= "00000";  -- By default write to register zero (which stays zero)
+
+                decode_is_exception     <= '0';
+                decode_mcause           <= (others => '0');
                 
                 decode_loadstore_width        <= func3(1 downto 0);
                 decode_loadstore_write        <= '0';
@@ -623,14 +642,14 @@ process(clk)
                     decode_rdest              <= "00000";
                     decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
                     decode_pc_mode            <= PC_JMP_REG_RELATIVE;
-                    case exception is 
-                        when EXCEPTION_RESET =>
-                            decode_pc_jump_offset <= x"F0000000";
-                        when EXCEPTION_UNKNOWN_INSTR =>
-                            decode_pc_jump_offset <= x"F0000000";
-                        when others =>
-                            decode_pc_jump_offset <= x"F0000000";
-                    end case;
+                    decode_mcause             <= exec_exception_cause;
+                    decode_is_exception       <= '1';
+                    if reset = '1'  then
+                        decode_pc_jump_offset <= x"F0000000";
+                    else
+                        -- TODO - vectored and unvectored
+                        decode_pc_jump_offset <= std_logic_Vector(unsigned(m_tvec_base) + unsigned(exec_exception_cause(29 downto 0)&"00"));
+                    end if;
                 end if;
             end if;
         end if;

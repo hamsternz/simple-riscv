@@ -38,6 +38,8 @@ entity exec_unit is
     Port ( clk                       : in STD_LOGIC;
 
            decode_force_complete     : in  STD_LOGIC;
+           decode_is_exception       : in  STD_LOGIC;
+           decode_mcause             : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     
            decode_addr               : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
            decode_immed              : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -80,6 +82,18 @@ entity exec_unit is
            exec_instr_failed         : out STD_LOGIC                      := '0';
            exec_flush_required       : out STD_LOGIC                      := '0';
            exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+           exec_exception            : out STD_LOGIC                      := '0';
+           exec_exception_cause      : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
+           m_ie         : out STD_LOGIC;
+           m_eie        : out STD_LOGIC;
+           m_tie        : out STD_LOGIC;
+           m_sie        : out STD_LOGIC;
+           m_eip        : in  STD_LOGIC;
+           m_tip        : in  STD_LOGIC;
+           m_sip        : in  STD_LOGIC;
+           m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
+           m_tvec_flag  : out STD_LOGIC;
 
            bus_busy      : in  STD_LOGIC;
            bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
@@ -184,18 +198,6 @@ architecture Behavioral of exec_unit is
     signal m_tval       : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal m_cause_set  : STD_LOGIC := '0';
     signal m_cause      : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-    signal m_ie         : STD_LOGIC;
-    signal m_eie        : STD_LOGIC;
-    signal m_tie        : STD_LOGIC;
-    signal m_sie        : STD_LOGIC;
-    signal m_eip        : STD_LOGIC := '1';
-    signal m_tip        : STD_LOGIC := '1';
-    signal m_sip        : STD_LOGIC := '1';
-
-         -- Trap vectors
-    signal m_tvec_base  : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-    signal m_tvec_flag  : STD_LOGIC;
-
 
     component alu is
       port ( clk             : in  STD_LOGIC;

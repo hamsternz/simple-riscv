@@ -1,7 +1,7 @@
 --###############################################################################
 --# ./hdl/cpu/riscv_cpu.vhd  - DESCRIPTION_NEEDED
 --#
---# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
+--# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU
 --#
 --# See https://github.com/hamsternz/simple-riscv
 --#
@@ -90,13 +90,29 @@ architecture Behavioral of riscv_cpu is
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
+            exec_exception            : in  STD_LOGIC;
+            exec_exception_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
             -- To the exec unit
             reset                     : in  STD_LOGIC;
+
+            -- From the CSR Unit
+            -- Interupt enable
+            m_ie         : in  STD_LOGIC;
+
+            -- Interrupt enable (external, timer, software)
+            m_eie        : in  STD_LOGIC;
+            m_tie        : in  STD_LOGIC;
+            m_sie        : in  STD_LOGIC;
+
+            -- Trap vectoring
+            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
+            m_tvec_flag  : in  STD_LOGIC;
+
+
             -- from the fetch unit
             fetch_opcode              : in  STD_LOGIC_VECTOR (31 downto 0);
             fetch_addr                : in  STD_LOGIC_VECTOR (31 downto 0);
             -- To the exec unit
-            decode_force_complete     : out STD_LOGIC := '0';
 
             decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
 
@@ -134,8 +150,11 @@ architecture Behavioral of riscv_cpu is
     
     
             decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
-            decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0')
-            
+            decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+
+            decode_force_complete     : out STD_LOGIC := '0';
+            decode_is_exception       : out STD_LOGIC;
+            decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
             );            
     end component;    
     
@@ -176,11 +195,12 @@ architecture Behavioral of riscv_cpu is
     
     signal decode_result_src         : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
     signal decode_rdest              : STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
+    signal decode_is_exception       : STD_LOGIC := '0';
+    signal decode_mcause             : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
     component exec_unit is
     Port ( clk                 : in STD_LOGIC;
 
-            decode_force_complete     : in  STD_LOGIC;
     
             decode_addr               : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
             decode_immed              : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -215,14 +235,19 @@ architecture Behavioral of riscv_cpu is
             decode_shift_enable       : in  STD_LOGIC := '0';
             decode_shift_mode         : in  STD_LOGIC_VECTOR(1 downto 0) := "00";
         
-        
             decode_result_src         : in  STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : in  STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
+
+            decode_force_complete     : in  STD_LOGIC;
+            decode_is_exception       : in  STD_LOGIC;
+            decode_mcause             : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     
             exec_instr_completed      : out STD_LOGIC;
             exec_instr_failed         : out STD_LOGIC;
             exec_flush_required       : out STD_LOGIC;
             exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0);
+            exec_exception            : out STD_LOGIC;
+            exec_exception_cause      : out STD_LOGIC_VECTOR(31 downto 0);
 
             bus_busy      : in  STD_LOGIC;
             bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
@@ -231,6 +256,23 @@ architecture Behavioral of riscv_cpu is
             bus_write     : out STD_LOGIC;
             bus_enable    : out STD_LOGIC;
             bus_din       : in  STD_LOGIC_VECTOR(31 downto 0);
+
+            -- From the CSR Unit
+            -- Interupt enable
+            m_ie          : out STD_LOGIC;
+
+            -- Interrupt enable (external, timer, software)
+            m_eie         : out STD_LOGIC;
+            m_tie         : out STD_LOGIC;
+            m_sie         : out STD_LOGIC;
+            m_eip         : in  STD_LOGIC;
+            m_tip         : in  STD_LOGIC;
+            m_sip         : in  STD_LOGIC;
+
+            -- Trap vectoring
+            m_tvec_base   : out STD_LOGIC_VECTOR(31 downto 0);
+            m_tvec_flag   : out STD_LOGIC;
+
 
             debug_pc      : out STD_LOGIC_VECTOR(31 downto 0);
             debug_sel     : in  STD_LOGIC_VECTOR(4 downto 0);
@@ -243,6 +285,17 @@ architecture Behavioral of riscv_cpu is
     signal exec_instr_failed    : STD_LOGIC;
     signal exec_flush_required  : STD_LOGIC;
     signal exec_current_pc      : STD_LOGIC_VECTOR (31 downto 0);
+    signal exec_exception       : STD_LOGIC;
+    signal exec_exception_cause : STD_LOGIC_VECTOR(31 downto 0);
+    signal m_ie                 : STD_LOGIC;
+    signal m_eie                : STD_LOGIC;
+    signal m_tie                : STD_LOGIC;
+    signal m_sie                : STD_LOGIC;
+    signal m_eip                : STD_LOGIC;
+    signal m_tip                : STD_LOGIC;
+    signal m_sip                : STD_LOGIC;
+    signal m_tvec_base          : STD_LOGIC_VECTOR(31 downto 0);
+    signal m_tvec_flag          : STD_LOGIC;
 
 begin
 
@@ -268,14 +321,23 @@ decode: decode_unit port map (
         clk                   => clk,
         reset                 => reset,
 
+        m_ie                  => m_ie,
+        m_eie                 => m_eie,
+        m_tie                 => m_tie,
+        m_sie                 => m_sie,
+        m_tvec_base           => m_tvec_base,
+        m_tvec_flag           => m_tvec_flag,
+
+
         exec_instr_completed  => exec_instr_completed,
         exec_instr_failed     => exec_instr_failed,
         exec_flush_required   => exec_flush_required,
+        exec_exception        => exec_exception,
+        exec_exception_cause  => exec_exception_cause,
 
         fetch_opcode          => fetch_opcode,
         fetch_addr            => fetch_addr,
         -- To the exec unit
-        decode_force_complete => decode_force_complete,
         decode_addr           => decode_addr,
         decode_immed          => decode_immed,         
         
@@ -310,13 +372,30 @@ decode: decode_unit port map (
         decode_shift_mode         => decode_shift_mode,
 
         decode_result_src         => decode_result_src,          
-        decode_rdest              => decode_rdest                                
+        decode_rdest              => decode_rdest,
+
+        decode_force_complete     => decode_force_complete,
+        decode_is_exception       => decode_is_exception,
+        decode_mcause             => decode_mcause
     );
 
 exec: exec_unit port map (
         clk                       => clk,
 
+        m_ie                  => m_ie,
+        m_eie                 => m_eie,
+        m_tie                 => m_tie,
+        m_sie                 => m_sie,
+        m_eip                 => m_eip,
+        m_tip                 => m_tip,
+        m_sip                 => m_sip,
+        m_tvec_base           => m_tvec_base,
+        m_tvec_flag           => m_tvec_flag,
+
+
         decode_force_complete     => decode_force_complete,
+        decode_is_exception       => decode_is_exception,
+        decode_mcause             => decode_mcause,
 
         decode_addr               => decode_addr,
         decode_immed              => decode_immed,         
@@ -358,6 +437,8 @@ exec: exec_unit port map (
         exec_instr_failed         => exec_instr_failed,
         exec_flush_required       => exec_flush_required,
         exec_current_pc           => exec_current_pc,
+        exec_exception            => exec_exception,
+        exec_exception_cause      => exec_exception_cause,
         --===============================================    
         bus_busy                  => bus_busy,
         bus_addr                  => bus_addr,
