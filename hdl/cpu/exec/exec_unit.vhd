@@ -121,10 +121,10 @@ end exec_unit;
 architecture Behavioral of exec_unit is
     signal pc                : STD_LOGIC_VECTOR(31 downto 0);
     signal pc_plus_four      : STD_LOGIC_VECTOR(31 downto 0);
-    signal completed         : STD_LOGIC := '1';
-    signal unknown           : STD_LOGIC := '1';
-    signal pc_completed      : STD_LOGIC := '1';
-    signal right_instr       : STD_LOGIC := '1';
+    signal completed         : STD_LOGIC := '0';
+    signal unknown_instr     : STD_LOGIC := '0';
+    signal pc_completed      : STD_LOGIC := '0';
+    signal right_instr       : STD_LOGIC := '0';
     
     component data_bus_mux_a is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
@@ -132,8 +132,6 @@ architecture Behavioral of exec_unit is
            pc             : in  STD_LOGIC_VECTOR(31 downto 0);
            data_bus       : out STD_LOGIC_VECTOR(31 downto 0)); 
     end component;
-  
-  
   
     component data_bus_mux_b is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
@@ -201,12 +199,8 @@ architecture Behavioral of exec_unit is
     signal csr_complete : std_logic;
     signal csr_failed   : std_logic;
     signal c_csr        : STD_LOGIC_VECTOR(31 downto 0);
-    signal m_epc_set    : STD_LOGIC := '0';
-    signal m_epc        : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal m_tval_set   : STD_LOGIC := '0';
     signal m_tval       : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-    signal m_cause_set  : STD_LOGIC := '0';
-    signal m_cause      : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
     component alu is
       port ( clk             : in  STD_LOGIC;
@@ -320,6 +314,17 @@ architecture Behavioral of exec_unit is
     signal loadstore_data        : STD_LOGIC_VECTOR(31 downto 0);
 
 begin
+    -- Mapping internal exceptions to external ones
+    exec_except_illegal_instr    <= unknown_instr;
+    exec_except_instr_misaligned <= '0';
+    exec_except_instr_access     <= '0';
+    exec_except_illegal_instr    <= '0';
+    exec_except_breakpoint       <= '0';
+    exec_except_load_misaligned  <= '0';
+    exec_except_load_access      <= '0';
+    exec_except_store_misaligned <= '0';
+    exec_except_store_access     <= '0';
+ 
     -- Managing the instrucion fetch misses
     right_instr         <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
 
@@ -333,16 +338,17 @@ begin
                                             branchtest_complete or jump_complete or loadstore_complete);
 
     --- This might be better off in the decoder...
-    unknown             <= right_instr and not(decode_alu_enable        or decode_csr_enable       or decode_shift_enable or
+    unknown_instr       <= right_instr and not(decode_alu_enable        or decode_csr_enable       or decode_shift_enable or
                                                decode_branchtest_enable or decode_loadstore_enable or decode_jump_enable);
+    
     -- Should the Program counter be advanced.
     pc_completed        <= completed or decode_force_complete;
    
     -- Outputs going to the outside world 
     exec_current_pc       <= pc;
     exec_instr_completed  <= completed;
-    exec_instr_failed     <= unknown or alu_failed        or csr_failed  or shift_failed
-                                     or branchtest_failed or jump_failed or loadstore_failed;
+    exec_instr_failed     <= unknown_instr or alu_failed        or csr_failed  or shift_failed
+                                           or branchtest_failed or jump_failed or loadstore_failed;
     exec_flush_required   <= not right_instr;
     debug_pc              <= pc;
     
@@ -367,14 +373,14 @@ i_csr_unit: csr_unit port map (
      b            => b_bus,
      c            => c_csr,
 
-     m_epc_set    => m_epc_set,
-     m_epc        => m_epc,
+     m_epc_set    => decode_is_exception,
+     m_epc        => pc,
 
      m_tval_set   => m_tval_set,
      m_tval       => m_tval,
 
-     m_cause_set  => m_cause_set,
-     m_cause      => m_cause,
+     m_cause_set  => decode_is_exception,
+     m_cause      => decode_mcause,
 
      m_ie         => m_ie,
 

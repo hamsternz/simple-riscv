@@ -637,7 +637,6 @@ process(clk)
                     if reset = '1'  then
                         decode_pc_jump_offset <= x"F0000000";
                     else
-                        -- TODO - vectored and unvectored
                         decode_pc_jump_offset <= intex_exception_vector;
                     end if;
                 end if;

@@ -844,6 +844,32 @@ process
                 print("120: CSRRW r05, 0xF14, r00");
                 assert debug_data = x"00000000" report "FAIL: register r05 not 0x00000000" severity FAILURE;
 
+            when x"F00001E8" =>                  
+                -- LUI r02, 0xF0000
+                debug_sel   <= "00010";
+                wait for 0.5 ns;
+                print("119: LUI r02, 0xF0000");
+                assert debug_data = x"F0000000" report "FAIL: register r02 not 0xF0000000" severity FAILURE;
+
+            when x"F00001EC" =>                  
+                -- ORI r02, 0x200
+                debug_sel   <= "00010";
+                wait for 0.5 ns;
+                print("119: ORI r02, 0x200");
+                assert debug_data = x"F0000200" report "FAIL: register r02 not 0xF0000200" severity FAILURE;
+            when x"F00001F0" =>                  
+                -- CSRRW r02, 0x305, r02
+                debug_sel   <= "00101";
+                wait for 0.5 ns;
+                print("120: CSRRW r02, 0x305, r02");
+                assert debug_data = x"00000000" report "FAIL: register r02 not 0x00000000" severity FAILURE;
+            when x"F00001F4" =>                  
+                assert debug_pc /= x"F00001F4" report "FAIL: pc should not get to 0xF00001F4" severity FAILURE;
+            when x"F00001F8" =>                  
+                assert debug_pc /= x"F00001F8" report "FAIL: pc should not get to 0xF00001F8" severity FAILURE;
+            when x"F00001FC" =>                  
+                assert debug_pc /= x"F00001FC" report "FAIL: pc should not get to 0xF00001FC" severity FAILURE;
+            when x"F0000200" =>                  
                 print("All tests complete");
                 wait;
             when x"effffff0" =>

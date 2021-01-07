@@ -20,6 +20,7 @@ read_vhdl ../../hdl/cpu/exec/result_bus_mux.vhd
 read_vhdl ../../hdl/cpu/exec/register_file.vhd
 read_vhdl ../../hdl/cpu/exec/data_bus_mux_b.vhd
 read_vhdl ../../hdl/cpu/exec/branch_test.vhd
+read_vhdl ../../hdl/cpu/intex/intex_unit.vhd
 read_vhdl ../../hdl/cpu/cpu_constants.vhd
 
 read_vhdl ../../hdl/cpu/csr/csr_300_mstatus.vhd
