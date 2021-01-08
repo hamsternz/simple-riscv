@@ -36,8 +36,8 @@ read_vhdl ../../hdl/cpu/csr/csr_F14_mhartid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_other.vhd
 
 # The Program ROM and RAM
-read_vhdl ../../hdl/memory/program_memory.vhd
-read_vhdl ../../hdl/memory/ram_memory.vhd
+read_vhdl ../../hdl/memory/program_memory_isa_test.vhd
+read_vhdl ../../hdl/memory/ram_memory_isa_test.vhd
 
 # The 'external' CPU bus - bridge, RAM and Serial peripherals
 read_vhdl ../../hdl/bus/bus_bridge.vhd
@@ -49,5 +49,5 @@ read_vhdl ../hdl/tb_top_level.vhd
 save_project_as isa_check -force
 set_property top tb_top_level [get_fileset sim_1]
 launch_simulation -simset sim_1 -mode behavioral
-run 5us
+run 6us
 quit
