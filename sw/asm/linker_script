@@ -37,6 +37,12 @@ ENTRY(_start)
 
 SEARCH_DIR("=/opt/riscv/riscv32-unknown-linux-gnu/lib32/ilp32d"); SEARCH_DIR("=/opt/riscv/riscv32-unknown-linux-gnu/lib32"); SEARCH_DIR("=/usr/local/lib32/ilp32d"); SEARCH_DIR("=/usr/local/lib32"); SEARCH_DIR("=/lib32/ilp32d"); SEARCH_DIR("=/lib32"); SEARCH_DIR("=/usr/lib32/ilp32d"); SEARCH_DIR("=/usr/lib32"); SEARCH_DIR("=/opt/riscv/riscv32-unknown-linux-gnu/lib"); SEARCH_DIR("=/usr/local/lib"); SEARCH_DIR("=/lib"); SEARCH_DIR("=/usr/lib");
 
+MEMORY
+{
+  datamem       (rwx) : ORIGIN = 0x10000000, LENGTH = 0x00200000
+  progmem       (rx)  : ORIGIN = 0xF0000000, LENGTH = 0x00200000
+}
+
 SECTIONS
 {
   .text           :
@@ -51,7 +57,7 @@ SECTIONS
     *(.rodata1) 
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
-  }
+  } > progmem
   .data           :
   {
     __DATA_BEGIN__ = .;
@@ -60,5 +66,5 @@ SECTIONS
     *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-  }
+  } > datamem
 }

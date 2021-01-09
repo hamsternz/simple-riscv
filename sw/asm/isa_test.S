@@ -1,6 +1,4 @@
 .global _start
-	#.org	0xF0000000	
-
 
 _start:	# Clear out two registers
  	xor	x1, x1, x1

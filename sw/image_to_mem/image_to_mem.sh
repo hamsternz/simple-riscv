@@ -33,6 +33,12 @@
 ###############################################################################
 OBJCOPY=/opt/riscv/bin/riscv32-unknown-linux-gnu-objcopy
 TARGET_DIR=../../hdl/memory
+if [ "`dirname $0`" = "" ]
+then
+   TEMPLATE_DIR=templates
+else
+   TEMPLATE_DIR="`dirname $0`/templates"
+fi
 
 if [ ! -f "$1" ]
 then
@@ -52,7 +58,7 @@ fi
     #############################
     ##### Output file header
     #############################
-    grep ^H: templates/template_program_memory.vhd | cut -c 3- 
+    grep ^H: $TEMPLATE_DIR/template_program_memory.vhd | cut -c 3- 
 
     #############################
     ##### Output Program data
@@ -62,14 +68,14 @@ fi
     #############################
     ##### Output file footer
     #############################
-    grep ^F: templates/template_program_memory.vhd | cut -c 3- 
+    grep ^F: $TEMPLATE_DIR/template_program_memory.vhd | cut -c 3- 
 ) > $TARGET_DIR/program_memory_$1.vhd
 
 (
     #############################
     ##### Output file header
     #############################
-    grep ^H: templates/template_ram_memory.vhd | cut -c 3- 
+    grep ^H: $TEMPLATE_DIR/template_ram_memory.vhd | cut -c 3- 
 
     #############################
     ##### Output Program data
@@ -79,7 +85,7 @@ fi
     #############################
     ##### Output file footer
     #############################
-    grep ^F: templates/template_ram_memory.vhd | cut -c 3- 
+    grep ^F: $TEMPLATE_DIR/template_ram_memory.vhd | cut -c 3- 
 ) > $TARGET_DIR/ram_memory_$1.vhd
 
 rm data.section.$$ text.section.$$
