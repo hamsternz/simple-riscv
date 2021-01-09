@@ -1,3 +1,35 @@
+--###############################################################################
+--# ./hdl/memory/ram_memory.vhd  - DESCRIPTION_NEEDED
+--#
+--# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
+--#
+--# See https://github.com/hamsternz/simple-riscv
+--#
+--# MIT License
+--#
+--###############################################################################
+--#
+--# Copyright (c) 2020 Mike Field
+--#
+--# Permission is hereby granted, free of charge, to any person obtaining a copy
+--# of this software and associated documentation files (the "Software"), to deal
+--# in the Software without restriction, including without limitation the rights
+--# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+--# copies of the Software, and to permit persons to whom the Software is
+--# furnished to do so, subject to the following conditions:
+--#
+--# The above copyright notice and this permission notice shall be included in all
+--# copies or substantial portions of the Software.
+--#
+--# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+--# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+--# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+--# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+--# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+--# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+--# SOFTWARE.
+--#
+--############################################################################### 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
@@ -15,23 +47,15 @@ end entity;
 architecture Behavioral of ram_memory is
     type a_memory is array (0 to 1023) of STD_LOGIC_VECTOR(31 downto 0);
     signal memory : a_memory := (
-         0 => x"6c6c6548",
-         1 => x"6f77206f",
-         2 => x"21646c72",
-         3 => x"00000a0d",
-         4 => x"61686320",
-         5 => x"74636172",
-         6 => x"20737265",
-         7 => x"676e6f6c",
-         8 => x"00000a0d",
-         9 => x"74786554",
-         10 => x"00000020",
-         11 => x"e0000000",
-         12 => x"e0000004",
-         13 => x"e0000008",
-         14 => x"e000000c",
-         15 => x"e0000010",
-         16 => x"e0000014",
+              0 => x"6c6c6548",
+              1 => x"6f77206f",
+              2 => x"21646c72",
+              3 => x"00000a0d",
+              4 => x"61686320",
+              5 => x"74636172",
+              6 => x"20737265",
+              7 => x"676e6f6c",
+              8 => x"00000a0d",
        others => (others=>'0'));
     signal data_valid : STD_LOGIC := '1';
 begin
