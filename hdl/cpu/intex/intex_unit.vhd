@@ -70,6 +70,7 @@ end intex_unit;
 
 architecture Behavioral of intex_unit is
    signal cause_code     : STD_LOGIC_VECTOR (31 downto 0);
+   signal intr_code      : STD_LOGIC_VECTOR (31 downto 0);
 begin
    intex_exception_raise  <= reset 
                           OR exec_except_instr_misaligned
@@ -83,7 +84,7 @@ begin
 
    -- Note - priority encoder
    -- Note INSTR_MISALIGNED and CAUSE_INSTR_ACCESS_FAULT must have priority over CAUSE_BREAKPOINT 
-   -- Because a missaligned instruction is also an illegal instruction 
+   --      because a missaligned instruction is also an illegal instruction 
    cause_code           <= (others=>'0') when reset = '1' else
                             CAUSE_INSTR_MISALIGNED      when exec_except_instr_misaligned = '1' else
                             CAUSE_INSTR_ACCESS_FAULT    when exec_except_instr_access     = '1' else
@@ -103,7 +104,8 @@ begin
 
    intex_exception_cause <= cause_code;
 
-   intex_exception_vector <= x"F0000000" when reset = '1' else
-                             m_tvec_base when m_tvec_flag = '0' else
-                             std_logic_Vector(unsigned(m_tvec_base) + unsigned(cause_code(29 downto 0)&"00"));
+   intex_exception_vector <= x"F0000000" when reset                 = '1' else
+                             m_tvec_base when m_tvec_flag           = '0' else
+                             m_tvec_base when intex_exception_raise = '1' else
+                             std_logic_Vector(unsigned(m_tvec_base) + unsigned(intr_code(29 downto 0)&"00"));
 end Behavioral;
