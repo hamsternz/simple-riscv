@@ -56,12 +56,12 @@ SECTIONS
     }
   .init           :
   {
-    KEEP (*(SORT_NONE(.init)))
   }
   .plt            : { *(.plt) }
   .iplt           : { *(.iplt) }
   .text           :
   {
+    KEEP (*(SORT_NONE(.init)))
     *(.text.unlikely .text.*_unlikely .text.unlikely.*)
     *(.text.exit .text.exit.*)
     *(.text.startup .text.startup.*)
@@ -78,7 +78,7 @@ SECTIONS
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
-  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
+/*  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } */
   .rodata1        : { *(.rodata1) }
   .sdata2         :
   {
@@ -163,7 +163,11 @@ SECTIONS
   {
     __DATA_BEGIN__ = .;
     *(.data .data.* .gnu.linkonce.d.*)
+    *(.rodata .rodata.* .gnu.linkonce.r.*) 
     SORT(CONSTRUCTORS)
+    __SDATA_BEGIN__ = .;
+    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
+    *(.sdata .sdata.* .gnu.linkonce.s.*)
   } > RAM
   .data1          : { *(.data1) }
   .got            : { *(.got.plt) *(.igot.plt) *(.got) *(.igot) }
@@ -172,9 +176,6 @@ SECTIONS
      we can shorten the on-disk segment size.  */
   .sdata          :
   {
-    __SDATA_BEGIN__ = .;
-    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
-    *(.sdata .sdata.* .gnu.linkonce.s.*)
   }
   _edata = .; PROVIDE (edata = .);
   . = .;
