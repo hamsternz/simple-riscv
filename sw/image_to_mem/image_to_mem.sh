@@ -46,7 +46,7 @@ then
    exit
 fi
 
-$OBJCOPY $1 /dev/null --dump-section .data=data.section.$$ --dump-section .text=text.section.$$
+$OBJCOPY $1 /dev/null --dump-section .data=data.section.$$ --dump-section .text=text.section.$$ --dump-section .init=init.section.$$
 
 if [ ! -f data.section.$$ -o ! -f text.section.$$ ]
 then
@@ -63,7 +63,7 @@ fi
     #############################
     ##### Output Program data
     #############################
-    cat text.section.$$ | od -An -w4 -v -tx4 | awk '{ printf("        %7i => x\"%8s\",\n", NR-1, $1); }'
+    cat init.section.$$ text.section.$$ | od -An -w4 -v -tx4 | awk '{ printf("        %7i => x\"%8s\",\n", NR-1, $1); }'
 
     #############################
     ##### Output file footer
@@ -88,4 +88,4 @@ fi
     grep ^F: $TEMPLATE_DIR/template_ram_memory.vhd | cut -c 3- 
 ) > $TARGET_DIR/ram_memory_$1.vhd
 
-rm data.section.$$ text.section.$$
+rm data.section.$$ text.section.$$ init.section.$$
