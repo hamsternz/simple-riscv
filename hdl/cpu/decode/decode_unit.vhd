@@ -495,17 +495,31 @@ process(clk)
                    when "1110011"  =>
                        case func3 is 
                            when "000"  =>
-                               case fetch_opcode(31 downto 20) is
-                                   when "000000000000" =>
-                                       if rs1 = "00000" and rd = "00000" then
-                                          decode_ecall <= '1';
-                                       end if; 
-                                   when "000000000001" =>
-                                       if rs1 = "00000" and rd = "00000" then
-                                          decode_ebreak <= '1';
-                                       end if; 
-                                   when others =>
-                               end case;
+                               if rs1 = "00000" and rd = "00000" then
+                                   case fetch_opcode(31 downto 20) is
+                                       when "000000000000" => 
+                                            ------------- ECALL ---------------
+                                            decode_ecall  <= '1';
+                                       when "000000000001" =>
+                                            ------------- EBREAK --------------
+                                            decode_ebreak <= '1';
+                                       when "001100000010" => 
+                                            ------------- MRET --------------
+                                            decode_jump_enable        <= '1';
+                                            decode_alu_enable         <= '0';
+                                            decode_shift_enable       <= '0';
+                                            decode_branchtest_enable  <= '0';
+                                            decode_reg_a              <= "00000";
+                                            decode_reg_b              <= "00000";
+                                            decode_rdest              <= "00000";
+                                            decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
+                                            decode_pc_mode            <= PC_JMP_REG_RELATIVE;
+                                            decode_mcause             <= intex_exception_cause;
+                                            decode_m_int_return       <= '1';
+                                            decode_pc_jump_offset     <= exec_m_epc;
+                                       when others =>
+                                   end case;
+                               end if; 
                            when "001"  =>
                                ------------ CSRRW -------------------
                                decode_csr_enable <= '1';
