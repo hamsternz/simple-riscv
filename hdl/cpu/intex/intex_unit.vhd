@@ -44,28 +44,27 @@ entity intex_unit is
             intex_exception_cause     : out STD_LOGIC_VECTOR (31 downto 0);
             intex_exception_vector    : out STD_LOGIC_VECTOR (31 downto 0);
 
-            exec_except_instr_misaligned : in std_logic := '0';
-            exec_except_instr_access     : in std_logic := '0';
-            exec_except_illegal_instr    : in std_logic := '0';
-            exec_except_breakpoint       : in std_logic := '0';
-            exec_except_load_misaligned  : in std_logic := '0';
-            exec_except_load_access      : in std_logic := '0';
-            exec_except_store_misaligned : in std_logic := '0';
-            exec_except_store_access     : in std_logic := '0';
+            exec_except_instr_misaligned : in std_logic;
+            exec_except_instr_access     : in std_logic;
+            exec_except_illegal_instr    : in std_logic;
+            exec_except_ebreak           : in std_logic;
+            exec_except_ecall            : in std_logic;
+            exec_except_load_misaligned  : in std_logic;
+            exec_except_load_access      : in std_logic;
+            exec_except_store_misaligned : in std_logic;
+            exec_except_store_access     : in std_logic;
 
             -----------------------------
             -- From the CSR Unit
             -----------------------------
-            m_ie         : in  STD_LOGIC;
-
+            exec_m_ie         : in  STD_LOGIC;
             -- Interrupt enable (external, timer, software)
-            m_eie        : in  STD_LOGIC;
-            m_tie        : in  STD_LOGIC;
-            m_sie        : in  STD_LOGIC;
+            exec_m_eie        : in  STD_LOGIC;
+            exec_m_tie        : in  STD_LOGIC;
+            exec_m_sie        : in  STD_LOGIC;
 
-            -- Trap vectoring
-            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
-            m_tvec_flag  : in  STD_LOGIC);
+            exec_m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
+            exec_m_tvec_flag  : in  STD_LOGIC);
 end intex_unit;
 
 architecture Behavioral of intex_unit is
@@ -77,7 +76,8 @@ begin
                           OR exec_except_instr_misaligned
                           OR exec_except_instr_access
                           OR exec_except_illegal_instr
-                          OR exec_except_breakpoint
+                          OR exec_except_ecall
+                          OR exec_except_ebreak
                           OR exec_except_load_misaligned
                           OR exec_except_load_access
                           OR exec_except_store_misaligned
@@ -87,18 +87,19 @@ begin
    -- Note - priority encoder
    -- Note INSTR_MISALIGNED and CAUSE_INSTR_ACCESS_FAULT must have priority over CAUSE_BREAKPOINT 
    --      because a missaligned instruction is also an illegal instruction 
+   --      likewise ebreak and ecall also decode as in illegal instruction
    cause_code           <= (others=>'0') when reset = '1' else
                             CAUSE_INSTR_MISALIGNED      when exec_except_instr_misaligned = '1' else
                             CAUSE_INSTR_ACCESS_FAULT    when exec_except_instr_access     = '1' else
+                            CAUSE_BREAKPOINT            when exec_except_ebreak           = '1' else
+                            CAUSE_ENV_CALL_M_MODE       when exec_except_ecall            = '1' else
                             CAUSE_ILLEGAL_INSTR         when exec_except_illegal_instr    = '1' else
-                            CAUSE_BREAKPOINT            when exec_except_breakpoint       = '1' else
                             CAUSE_LOAD_ADDR_MISALIGNED  when exec_except_load_misaligned  = '1' else
                             CAUSE_LOAD_ACCESS_FAULT     when exec_except_load_access      = '1' else
                             CAUSE_STORE_ADDR_MISALIGNED when exec_except_store_misaligned = '1' else
                             CAUSE_STORE_ACCESS_FAULT    when exec_except_store_access     = '1' else
                         --  CAUSE_ENV_CALL_U_MODE       when
                         --  CAUSE_ENV_CALL_S_MODE       when
-                        --  CAUSE_ENV_CALL_M_MODE       when
                         --  CAUSE_INSTR_PAGE_FAULT      when
                         --  CAUSE_LOAD_PAGE_FAULT       when
                         --  CAUSE_STORE_PAGE_FAULT      when
@@ -106,8 +107,8 @@ begin
 
    intex_exception_cause <= cause_code;
 
-   intex_exception_vector <= x"F0000000" when reset           = '1' else
-                             m_tvec_base when m_tvec_flag     = '0' else
-                             m_tvec_base when exception_raise = '1' else
-                             std_logic_Vector(unsigned(m_tvec_base) + unsigned(intr_code(29 downto 0)&"00"));
+   intex_exception_vector <= x"F0000000"      when reset            = '1' else
+                             exec_m_tvec_base when exec_m_tvec_flag = '0' else
+                             exec_m_tvec_base when exception_raise  = '1' else
+                             std_logic_Vector(unsigned(exec_m_tvec_base) + unsigned(intr_code(29 downto 0)&"00"));
 end Behavioral;

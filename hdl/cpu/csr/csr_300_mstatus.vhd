@@ -44,7 +44,8 @@ entity csr_300_mstatus is
          csr_complete : out STD_LOGIC;  
          csr_failed   : out STD_LOGIC;  
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-
+         m_int_enter  : in  STD_LOGIC;
+         m_int_return : in  STD_LOGIC;
          m_ie         : out STD_LOGIC); 
 end entity;
 
@@ -74,6 +75,7 @@ architecture Behavioral of csr_300_mstatus is
    signal mpie         : std_logic := '0';                                -- M previous Interupt enable 
    signal spie         : std_logic := '0';                                    -- Hardwire zero - S previous interrupt enable
    signal upie         : std_logic := '0';                                    -- Hardwire zero - U previous interrupt enable
+   signal priv_mode    : std_logic_vector(1 downto 0) := CPU_PRIV_M;
 begin
    csr_complete <= complete;
    csr_failed   <= failed;
@@ -98,21 +100,21 @@ process(clk)
 
                when CSR_WRITE =>
                   complete <= '1';
-                  mpp(1)   <= csr_value(12);
+                  mpp      <= CPU_PRIV_M;
                   mpie     <= csr_value(7);
                   mie      <= csr_value(3);
                   report "WRITE mstatus CSR";
 
                when CSR_WRITESET =>
                   complete <= '1';
-                  mpp(1)   <= mpp(1) OR csr_value(12);
+                  mpp      <= CPU_PRIV_M;
                   mpie     <= mpie   OR csr_value(7);
                   mie      <= mie    OR csr_value(3);
                   report "WRITESET mstatus CSR";
 
                when CSR_WRITECLEAR =>
                   complete <= '1';
-                  mpp(1)   <= mpp(1) AND NOT csr_value(12);
+                  mpp      <= CPU_PRIV_M;
                   mpie     <= mpie   AND NOT csr_value(7);
                   mie      <= mie    AND NOT csr_value(3);
                   report "WRITECLEAR mstatus CSR";
@@ -125,7 +127,7 @@ process(clk)
                when CSR_READWRITE =>
                   complete <= '1';
                   result   <= stored_value;
-                  mpp(1)   <= csr_value(12);
+                  mpp      <= CPU_PRIV_M;
                   mpie     <= csr_value(7);
                   mie      <= csr_value(3);
                   report "READWRITE mstatus CSR";
@@ -133,7 +135,7 @@ process(clk)
                when CSR_READWRITESET =>
                   complete <= '1';
                   result   <= stored_value;
-                  mpp(1)   <= mpp(1) OR csr_value(12);
+                  mpp      <= CPU_PRIV_M;
                   mpie     <= mpie   OR csr_value(7);
                   mie      <= mie    OR csr_value(3);
                   report "READWRITESET mstatus CSR";
@@ -141,7 +143,7 @@ process(clk)
                when CSR_READWRITECLEAR =>
                   complete <= '1';
                   result   <= stored_value;
-                  mpp(1)   <= mpp(1) AND NOT csr_value(12);
+                  mpp      <= CPU_PRIV_M;
                   mpie     <= mpie   AND NOT csr_value(7);
                   mie      <= mie    AND NOT csr_value(3);
                   report "READWRITECLEAR mstatus CSR";
@@ -149,6 +151,17 @@ process(clk)
                when others   =>
                   failed      <= '1';
             end case;
+         end if;
+         if m_int_enter = '1' then
+            mpp       <= priv_mode; -- Will always be CPU_PRIV_M
+            mpie      <= mie;
+            mie       <= '1';
+         end if;
+         if m_int_return = '1' then
+            priv_mode <= mpp;
+            mpie      <= '1';
+            mie       <= mpie;
+            mpp       <= CPU_PRIV_M;  -- CPU_PRIV_U if user mode supported
          end if;
       end if;
    end process;

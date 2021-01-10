@@ -49,7 +49,8 @@ entity csr_unit is
 
          -- Exception Program counter
          m_epc_set    : in  STD_LOGIC;
-         m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_epc_in     : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_epc_out    : out STD_LOGIC_VECTOR(31 downto 0);
 
          -- Trap Value
          m_tval_set   : in  STD_LOGIC;
@@ -59,8 +60,12 @@ entity csr_unit is
          m_cause_set  : in  STD_LOGIC;
          m_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
 
-         -- Interupt enable
+         -- Global Interupt enable
          m_ie         : out STD_LOGIC;
+
+         -- For updating mstatus flags
+         m_int_enter  : in  STD_LOGIC;
+         m_int_return : in  STD_LOGIC;
 
          -- Interrupt enable (external, timer, software)
          m_eie        : out STD_LOGIC;
@@ -96,6 +101,8 @@ architecture Behavioral of csr_unit is
          csr_failed   : out STD_LOGIC;
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0);
+         m_int_enter  : in  STD_LOGIC;
+         m_int_return : in  STD_LOGIC;
          m_ie         : out STD_LOGIC);
   end component;
   signal csr_300_active        : std_logic := '0';
@@ -174,8 +181,9 @@ architecture Behavioral of csr_unit is
          csr_failed   : out STD_LOGIC;
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-         m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
-         m_epc_set    : in  STD_LOGIC
+         m_epc_set    : in  STD_LOGIC;
+         m_epc_in     : in  STD_LOGIC_VECTOR(31 downto 0);
+         m_epc_out    : out STD_LOGIC_VECTOR(31 downto 0)
   );
   end component;
   signal csr_341_active        : std_logic := '0';
@@ -398,6 +406,8 @@ i_csr_300: csr_300_mstatus port map (
     csr_complete => csr_300_complete,
     csr_failed   => csr_300_failed,
     csr_result   => csr_300_result,
+    m_int_enter  => m_int_enter,
+    m_int_return => m_int_return,
     m_ie         => m_ie
   );
 
@@ -454,8 +464,9 @@ i_csr_341: csr_341_mepc port map (
     csr_complete => csr_341_complete,
     csr_failed   => csr_341_failed,
     csr_result   => csr_341_result,
-    m_epc        => m_epc,
-    m_epc_set    => m_epc_set
+    m_epc_set    => m_epc_set,
+    m_epc_in     => m_epc_in,
+    m_epc_out    => m_epc_out
   );
 
 i_csr_342: csr_342_mcause port map ( 

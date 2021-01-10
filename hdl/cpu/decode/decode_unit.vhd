@@ -44,6 +44,7 @@ entity decode_unit is
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
+            exec_m_epc                : in  STD_LOGIC_VECTOR(31 downto 0);
 
             -- From the interrupt/exception unit
             intex_exception_raise     : in  STD_LOGIC;
@@ -92,13 +93,15 @@ entity decode_unit is
             decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 
-            decode_is_exception       : out STD_LOGIC;
+            decode_m_int_enter        : out STD_LOGIC;
+            decode_m_int_return       : out STD_LOGIC;
             decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
             decode_instr_misaligned   : out std_logic := '0';
             decode_instr_access       : out std_logic := '0';
 
-            decode_breakpoint         : out std_logic := '0';
+            decode_ecall              : out std_logic := '0';
+            decode_ebreak             : out std_logic := '0';
             -- To allow interrupts to be forced
             decode_force_complete     : out STD_LOGIC := '0'); 
 end decode_unit;
@@ -148,7 +151,6 @@ process(clk)
         if rising_edge(clk) then
             if exec_instr_completed = '1' OR exec_flush_required = '1' then
     
-                decode_breakpoint         <= '0';
                 decode_instr_misaligned   <= fetch_instr_misaligned;
                 decode_instr_access       <= fetch_except_instr_access;
 
@@ -161,6 +163,8 @@ process(clk)
                 decode_jump_enable       <= '0';
                 decode_shift_enable      <= '0';
                 decode_branchtest_enable <= '0';
+                decode_ecall             <= '0';
+                decode_ebreak            <= '0';
         
                 decode_reg_a            <= rs1; 
                 decode_select_a         <= A_BUS_REGISTER;
@@ -186,7 +190,8 @@ process(clk)
                 decode_result_src       <= RESULT_ALU;         
                 decode_rdest            <= "00000";  -- By default write to register zero (which stays zero)
 
-                decode_is_exception     <= '0';
+                decode_m_int_enter      <= '0';
+                decode_m_int_return     <= '0';
                 decode_mcause           <= (others => '0');
                 
                 decode_loadstore_width        <= func3(1 downto 0);
@@ -493,13 +498,11 @@ process(clk)
                                case fetch_opcode(31 downto 20) is
                                    when "000000000000" =>
                                        if rs1 = "00000" and rd = "00000" then
-                                           ------------ ECALL ------------------
-                                           -- TODO
+                                          decode_ecall <= '1';
                                        end if; 
                                    when "000000000001" =>
                                        if rs1 = "00000" and rd = "00000" then
-                                           ------------ EBREAK ------------------
-                                           -- TODO
+                                          decode_ebreak <= '1';
                                        end if; 
                                    when others =>
                                end case;
@@ -644,7 +647,7 @@ process(clk)
                     decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
                     decode_pc_mode            <= PC_JMP_REG_RELATIVE;
                     decode_mcause             <= intex_exception_cause;
-                    decode_is_exception       <= '1';
+                    decode_m_int_enter        <= '1';
                     if reset = '1'  then
                         decode_pc_jump_offset <= x"F0000000";
                     else

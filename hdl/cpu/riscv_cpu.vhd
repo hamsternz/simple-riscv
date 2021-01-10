@@ -95,6 +95,7 @@ architecture Behavioral of riscv_cpu is
             exec_instr_completed      : in  STD_LOGIC;
             exec_instr_failed         : in  STD_LOGIC;
             exec_flush_required       : in  STD_LOGIC;
+            exec_m_epc                : in  STD_LOGIC_VECTOR (31 downto 0);
 
             -- To the exec unit
             reset                     : in  STD_LOGIC;
@@ -112,59 +113,62 @@ architecture Behavioral of riscv_cpu is
 
             -- To the exec unit
 
-            decode_addr               : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
+            decode_addr               : out STD_LOGIC_VECTOR(31 downto 0);
 
-            decode_immed              : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
+            decode_immed              : out STD_LOGIC_VECTOR(31 downto 0);
             
-            decode_reg_a              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
-            decode_select_a           : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
+            decode_reg_a              : out STD_LOGIC_VECTOR(4 downto 0);
+            decode_select_a           : out STD_LOGIC_VECTOR(0 downto 0);
     
-            decode_reg_b              : out STD_LOGIC_VECTOR(4 downto 0)  := (others => '0');
-            decode_select_b           : out STD_LOGIC_VECTOR(0 downto 0)  := (others => '0');
+            decode_reg_b              : out STD_LOGIC_VECTOR(4 downto 0);
+            decode_select_b           : out STD_LOGIC_VECTOR(0 downto 0);
 
-            decode_jump_enable        : out STD_LOGIC := '0';
-            decode_pc_mode            : out STD_LOGIC_VECTOR(1 downto 0) := "00";
-            decode_pc_jump_offset     : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+            decode_jump_enable        : out STD_LOGIC;
+            decode_pc_mode            : out STD_LOGIC_VECTOR(1 downto 0);
+            decode_pc_jump_offset     : out STD_LOGIC_VECTOR(31 downto 0);
     
-            decode_loadstore_enable   : out STD_LOGIC := '0';
-            decode_loadstore_offset   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+            decode_loadstore_enable   : out STD_LOGIC;
+            decode_loadstore_offset   : out STD_LOGIC_VECTOR(31 downto 0);
             decode_loadstore_write    : out STD_LOGIC;
             decode_loadstore_width    : out STD_LOGIC_VECTOR(1 downto 0);
-            decode_loadstore_ex_mode  : out STD_LOGIC_VECTOR(0 downto 0) := "0";
-            decode_loadstore_ex_width : out STD_LOGIC_VECTOR(1 downto 0) := "00";
+            decode_loadstore_ex_mode  : out STD_LOGIC_VECTOR(0 downto 0);
+            decode_loadstore_ex_width : out STD_LOGIC_VECTOR(1 downto 0);
     
-            decode_alu_enable         : out STD_LOGIC := '0';
-            decode_alu_mode           : out STD_LOGIC_VECTOR(2 downto 0) := "000";
+            decode_alu_enable         : out STD_LOGIC;
+            decode_alu_mode           : out STD_LOGIC_VECTOR(2 downto 0);
 
-            decode_csr_enable         : out STD_LOGIC := '0';
-            decode_csr_mode           : out STD_LOGIC_VECTOR(2 downto 0)  := "000";
-            decode_csr_reg            : out STD_LOGIC_VECTOR(11 downto 0) := (others => '0');
+            decode_csr_enable         : out STD_LOGIC;
+            decode_csr_mode           : out STD_LOGIC_VECTOR(2 downto 0);
+            decode_csr_reg            : out STD_LOGIC_VECTOR(11 downto 0);
 
-            decode_branchtest_enable : out STD_LOGIC := '0';
-            decode_branchtest_mode   : out STD_LOGIC_VECTOR(2 downto 0) := "000";
+            decode_branchtest_enable  : out STD_LOGIC;
+            decode_branchtest_mode    : out STD_LOGIC_VECTOR(2 downto 0);
 
-            decode_shift_enable         : out STD_LOGIC := '0';
-            decode_shift_mode         : out STD_LOGIC_VECTOR(1 downto 0) := "00";
+            decode_shift_enable       : out STD_LOGIC;
+            decode_shift_mode         : out STD_LOGIC_VECTOR(1 downto 0);
     
     
-            decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
-            decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+            decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0);
+            decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0);
 
-            decode_instr_misaligned   : out std_logic := '0';
-            decode_instr_access       : out std_logic := '0';
-            decode_breakpoint         : out std_logic := '0';
+            decode_instr_misaligned   : out std_logic;
+            decode_instr_access       : out std_logic;
+            decode_ecall              : out std_logic;
+            decode_ebreak             : out std_logic;
 
-            decode_force_complete     : out STD_LOGIC := '0';
-            decode_is_exception       : out STD_LOGIC;
+            decode_force_complete     : out STD_LOGIC;
+            decode_m_int_enter        : out STD_LOGIC;
+            decode_m_int_return       : out STD_LOGIC;
 
-            decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
+            decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0)
             );            
     end component;    
     
     signal decode_force_complete     : STD_LOGIC;
     signal decode_instr_misaligned   : std_logic;
     signal decode_instr_access       : std_logic;
-    signal decode_breakpoint         : std_logic;
+    signal decode_ecall              : std_logic;
+    signal decode_ebreak             : std_logic;
 
     signal decode_addr               : STD_LOGIC_VECTOR (31 downto 0);
     signal decode_immed              : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -201,7 +205,8 @@ architecture Behavioral of riscv_cpu is
     
     signal decode_result_src         : STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
     signal decode_rdest              : STD_LOGIC_VECTOR(4 downto 0) := (others => '0');            
-    signal decode_is_exception       : STD_LOGIC := '0';
+    signal decode_m_int_enter        : STD_LOGIC := '0';
+    signal decode_m_int_return       : STD_LOGIC := '0';
     signal decode_mcause             : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
     component exec_unit is
@@ -246,10 +251,12 @@ architecture Behavioral of riscv_cpu is
                         
             decode_instr_misaligned   : in std_logic;
             decode_instr_access       : in std_logic;
-            decode_breakpoint         : in std_logic;
+            decode_ecall              : in std_logic;
+            decode_ebreak             : in std_logic;
 
             decode_force_complete     : in  STD_LOGIC;
-            decode_is_exception       : in  STD_LOGIC;
+            decode_m_int_enter        : in  STD_LOGIC;
+            decode_m_int_return       : in  STD_LOGIC;
             decode_mcause             : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     
             exec_instr_completed      : out STD_LOGIC;
@@ -269,7 +276,8 @@ architecture Behavioral of riscv_cpu is
             exec_except_instr_misaligned : out std_logic;
             exec_except_instr_access     : out std_logic;
             exec_except_illegal_instr    : out std_logic;
-            exec_except_breakpoint       : out std_logic;
+            exec_except_ecall            : out std_logic;
+            exec_except_ebreak           : out std_logic;
             exec_except_load_misaligned  : out std_logic;
             exec_except_load_access      : out std_logic;
             exec_except_store_misaligned : out std_logic;
@@ -277,19 +285,22 @@ architecture Behavioral of riscv_cpu is
 
             -- From the internal CSR Unit to the outside world
             -- Interupt enable
-            m_ie          : out STD_LOGIC;
+            exec_m_ie          : out STD_LOGIC;
 
             -- Interrupt enable (external, timer, software)
-            m_eie         : out STD_LOGIC;
-            m_tie         : out STD_LOGIC;
-            m_sie         : out STD_LOGIC;
+            exec_m_eie         : out STD_LOGIC;
+            exec_m_tie         : out STD_LOGIC;
+            exec_m_sie         : out STD_LOGIC;
             m_eip         : in  STD_LOGIC;
             m_tip         : in  STD_LOGIC;
             m_sip         : in  STD_LOGIC;
 
+            -- Return address for traps
+            exec_m_epc         : out STD_LOGIC_VECTOR(31 downto 0);
+
             -- Trap vectoring
-            m_tvec_base   : out STD_LOGIC_VECTOR(31 downto 0);
-            m_tvec_flag   : out STD_LOGIC;
+            exec_m_tvec_base   : out STD_LOGIC_VECTOR(31 downto 0);
+            exec_m_tvec_flag   : out STD_LOGIC;
 
 
             debug_pc      : out STD_LOGIC_VECTOR(31 downto 0);
@@ -303,15 +314,16 @@ architecture Behavioral of riscv_cpu is
     signal exec_instr_failed    : STD_LOGIC;
     signal exec_flush_required  : STD_LOGIC;
     signal exec_current_pc      : STD_LOGIC_VECTOR (31 downto 0);
-    signal m_ie                 : STD_LOGIC;
-    signal m_eie                : STD_LOGIC;
-    signal m_tie                : STD_LOGIC;
-    signal m_sie                : STD_LOGIC;
+    signal exec_m_epc           : STD_LOGIC_VECTOR (31 downto 0);
+    signal exec_m_ie                 : STD_LOGIC;
+    signal exec_m_eie                : STD_LOGIC;
+    signal exec_m_tie                : STD_LOGIC;
+    signal exec_m_sie                : STD_LOGIC;
     signal m_eip                : STD_LOGIC;
     signal m_tip                : STD_LOGIC;
     signal m_sip                : STD_LOGIC;
-    signal m_tvec_base          : STD_LOGIC_VECTOR(31 downto 0);
-    signal m_tvec_flag          : STD_LOGIC;
+    signal exec_m_tvec_base          : STD_LOGIC_VECTOR(31 downto 0);
+    signal exec_m_tvec_flag          : STD_LOGIC;
 
     component intex_unit is
     Port (  clk                       : in  STD_LOGIC;
@@ -324,7 +336,8 @@ architecture Behavioral of riscv_cpu is
             exec_except_instr_misaligned : in std_logic;
             exec_except_instr_access     : in std_logic;
             exec_except_illegal_instr    : in std_logic;
-            exec_except_breakpoint       : in std_logic;
+            exec_except_ecall            : in std_logic;
+            exec_except_ebreak           : in std_logic;
             exec_except_load_misaligned  : in std_logic;
             exec_except_load_access      : in std_logic;
             exec_except_store_misaligned : in std_logic;
@@ -333,16 +346,16 @@ architecture Behavioral of riscv_cpu is
             -----------------------------
             -- From the CSR Unit
             -----------------------------
-            m_ie         : in  STD_LOGIC;
+            exec_m_ie         : in  STD_LOGIC;
 
             -- Interrupt enable (external, timer, software)
-            m_eie        : in  STD_LOGIC;
-            m_tie        : in  STD_LOGIC;
-            m_sie        : in  STD_LOGIC;
+            exec_m_eie        : in  STD_LOGIC;
+            exec_m_tie        : in  STD_LOGIC;
+            exec_m_sie        : in  STD_LOGIC;
 
             -- Trap vectoring
-            m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
-            m_tvec_flag  : in  STD_LOGIC);
+            exec_m_tvec_base  : in  STD_LOGIC_VECTOR(31 downto 0);
+            exec_m_tvec_flag  : in  STD_LOGIC);
     end component;
     signal intex_exception_raise        : STD_LOGIC;
     signal intex_exception_cause        : STD_LOGIC_VECTOR (31 downto 0);
@@ -351,7 +364,8 @@ architecture Behavioral of riscv_cpu is
     signal exec_except_instr_misaligned : std_logic := '0';
     signal exec_except_instr_access     : std_logic := '0';
     signal exec_except_illegal_instr    : std_logic := '0';
-    signal exec_except_breakpoint       : std_logic := '0';
+    signal exec_except_ecall            : std_logic := '0';
+    signal exec_except_ebreak           : std_logic := '0';
     signal exec_except_load_misaligned  : std_logic := '0';
     signal exec_except_load_access      : std_logic := '0';
     signal exec_except_store_misaligned : std_logic := '0';
@@ -390,6 +404,7 @@ decode: decode_unit port map (
         exec_instr_completed      => exec_instr_completed,
         exec_instr_failed         => exec_instr_failed,
         exec_flush_required       => exec_flush_required,
+        exec_m_epc                => exec_m_epc,
 
         -- From the fetch unit
         fetch_opcode              => fetch_opcode,
@@ -436,34 +451,38 @@ decode: decode_unit port map (
 
         decode_instr_misaligned   => decode_instr_misaligned,
         decode_instr_access       => decode_instr_access,
-        decode_breakpoint         => decode_breakpoint,
+        decode_ecall              => decode_ecall,
+        decode_ebreak             => decode_ebreak,
 
         decode_force_complete     => decode_force_complete,
-        decode_is_exception       => decode_is_exception,
+        decode_m_int_enter        => decode_m_int_enter,
+        decode_m_int_return       => decode_m_int_return,
         decode_mcause             => decode_mcause
     );
 
 exec: exec_unit port map (
         clk                       => clk,
 
-        m_ie                  => m_ie,
-        m_eie                 => m_eie,
-        m_tie                 => m_tie,
-        m_sie                 => m_sie,
-        m_eip                 => m_eip,
-        m_tip                 => m_tip,
-        m_sip                 => m_sip,
-        m_tvec_base           => m_tvec_base,
-        m_tvec_flag           => m_tvec_flag,
+        exec_m_ie                 => exec_m_ie,
+        exec_m_eie                => exec_m_eie,
+        exec_m_tie                => exec_m_tie,
+        exec_m_sie                => exec_m_sie,
+        m_eip                     => m_eip,
+        m_tip                     => m_tip,
+        m_sip                     => m_sip,
+        exec_m_tvec_base          => exec_m_tvec_base,
+        exec_m_tvec_flag          => exec_m_tvec_flag,
 
 
         decode_force_complete     => decode_force_complete,
-        decode_is_exception       => decode_is_exception,
+        decode_m_int_enter        => decode_m_int_enter,
+        decode_m_int_return       => decode_m_int_return,
         decode_mcause             => decode_mcause,
 
         decode_instr_misaligned   => decode_instr_misaligned,
         decode_instr_access       => decode_instr_access,
-        decode_breakpoint         => decode_breakpoint,
+        decode_ecall              => decode_ecall,
+        decode_ebreak             => decode_ebreak,
 
         decode_addr               => decode_addr,
         decode_immed              => decode_immed,         
@@ -509,7 +528,8 @@ exec: exec_unit port map (
         exec_except_instr_misaligned => exec_except_instr_misaligned,
         exec_except_instr_access     => exec_except_instr_access,
         exec_except_illegal_instr    => exec_except_illegal_instr,
-        exec_except_breakpoint       => exec_except_breakpoint,
+        exec_except_ecall            => exec_except_ecall,
+        exec_except_ebreak           => exec_except_ebreak,
         exec_except_load_misaligned  => exec_except_load_misaligned,
         exec_except_load_access      => exec_except_load_access,
         exec_except_store_misaligned => exec_except_store_misaligned,
@@ -540,17 +560,18 @@ i_intex_unit: intex_unit port map (
         exec_except_instr_misaligned => exec_except_instr_misaligned,
         exec_except_instr_access     => exec_except_instr_access,
         exec_except_illegal_instr    => exec_except_illegal_instr,
-        exec_except_breakpoint       => exec_except_breakpoint,
+        exec_except_ecall            => exec_except_ecall,
+        exec_except_ebreak           => exec_except_ebreak,
         exec_except_load_misaligned  => exec_except_load_misaligned,
         exec_except_load_access      => exec_except_load_access,
         exec_except_store_misaligned => exec_except_store_misaligned,
         exec_except_store_access     => exec_except_store_access,
 
-        m_ie                         => m_ie,
-        m_eie                        => m_eie,
-        m_tie                        => m_tie,
-        m_sie                        => m_sie,
-        m_tvec_base                  => m_tvec_base,
-        m_tvec_flag                  => m_tvec_flag);
+        exec_m_ie                    => exec_m_ie,
+        exec_m_eie                   => exec_m_eie,
+        exec_m_tie                   => exec_m_tie,
+        exec_m_sie                   => exec_m_sie,
+        exec_m_tvec_base             => exec_m_tvec_base,
+        exec_m_tvec_flag             => exec_m_tvec_flag);
 
 end Behavioral;

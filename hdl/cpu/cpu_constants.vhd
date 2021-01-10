@@ -34,8 +34,13 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 package cpu_constants is
+    -- Privilege modes (this only support M mode)
+    constant CPU_PRIV_U                  : STD_LOGIC_VECTOR(1 downto 0) := "00"; -- Not used
+    constant CPU_PRIV_S                  : STD_LOGIC_VECTOR(1 downto 0) := "01"; -- Not used
+    constant CPU_PRIV_X                  : STD_LOGIC_VECTOR(1 downto 0) := "10"; -- Not defined in ISA
+    constant CPU_PRIV_M                  : STD_LOGIC_VECTOR(1 downto 0) := "11";
 
-  -- MUXing of the A and B data
+    -- MUXing of the A and B data
     constant A_BUS_REGISTER              : STD_LOGIC_VECTOR(0 downto 0) := "0";
     constant A_BUS_PC                    : STD_LOGIC_VECTOR(0 downto 0) := "1";
     

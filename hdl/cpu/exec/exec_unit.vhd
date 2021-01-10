@@ -38,12 +38,15 @@ entity exec_unit is
     Port ( clk                       : in STD_LOGIC;
 
            decode_force_complete     : in  STD_LOGIC;
-           decode_is_exception       : in  STD_LOGIC;
+           decode_m_int_enter        : in  STD_LOGIC;
+           decode_m_int_return       : in  std_logic := '0';
            decode_mcause             : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
            
            decode_instr_misaligned   : in  std_logic := '0';
            decode_instr_access       : in  std_logic := '0';
-           decode_breakpoint         : in  std_logic := '0';
+           decode_ecall              : in  std_logic := '0';
+           decode_ebreak             : in  std_logic := '0';
+
 
            decode_addr               : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
            decode_immed              : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');         
@@ -91,22 +94,24 @@ entity exec_unit is
            exec_except_instr_misaligned : out std_logic := '0';
            exec_except_instr_access     : out std_logic := '0';
            exec_except_illegal_instr    : out std_logic := '0';
-           exec_except_breakpoint       : out std_logic := '0';
+           exec_except_ecall            : out std_logic := '0';
+           exec_except_ebreak           : out std_logic := '0';
            exec_except_load_misaligned  : out std_logic := '0';
            exec_except_load_access      : out std_logic := '0';
            exec_except_store_misaligned : out std_logic := '0';
            exec_except_store_access     : out std_logic := '0';
 
            -- Signals in / out of the CSR unit
-           m_ie         : out STD_LOGIC;
-           m_eie        : out STD_LOGIC;
-           m_tie        : out STD_LOGIC;
-           m_sie        : out STD_LOGIC;
-           m_eip        : in  STD_LOGIC;
-           m_tip        : in  STD_LOGIC;
-           m_sip        : in  STD_LOGIC;
-           m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
-           m_tvec_flag  : out STD_LOGIC;
+           exec_m_ie         : out STD_LOGIC;
+           exec_m_eie        : out STD_LOGIC;
+           exec_m_tie        : out STD_LOGIC;
+           exec_m_sie        : out STD_LOGIC;
+           m_eip             : in  STD_LOGIC;
+           m_tip             : in  STD_LOGIC;
+           m_sip             : in  STD_LOGIC;
+           exec_m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
+           exec_m_tvec_flag  : out STD_LOGIC;
+           exec_m_epc        : out STD_LOGIC_VECTOR(31 downto 0);
 
            bus_busy      : in  STD_LOGIC;
            bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
@@ -171,7 +176,8 @@ architecture Behavioral of exec_unit is
 
              -- Exception Program counter
              m_epc_set    : in  STD_LOGIC;
-             m_epc        : in  STD_LOGIC_VECTOR(31 downto 0);
+             m_epc_in     : in  STD_LOGIC_VECTOR(31 downto 0);
+             m_epc_out    : out STD_LOGIC_VECTOR(31 downto 0);
 
              -- Trap Value
              m_tval_set   : in  STD_LOGIC;
@@ -181,8 +187,13 @@ architecture Behavioral of exec_unit is
              m_cause_set  : in  STD_LOGIC;
              m_cause      : in  STD_LOGIC_VECTOR(31 downto 0);
 
-             -- Interupt enable
+             -- Interrupt enable
              m_ie         : out STD_LOGIC;
+
+             -- Interrupt enter / exit 
+             m_int_enter  : in  STD_LOGIC;
+             m_int_return : in  STD_LOGIC;
+
     
              -- Interrupt enable (external, timer, software)
              m_eie        : out STD_LOGIC;
@@ -327,7 +338,8 @@ begin
     exec_except_illegal_instr    <= unknown_instr;
     exec_except_instr_misaligned <= right_instr and decode_instr_misaligned;
     exec_except_instr_access     <= right_instr and decode_instr_access;
-    exec_except_breakpoint       <= right_instr and decode_breakpoint;
+    exec_except_ebreak           <= right_instr and decode_ebreak;
+    exec_except_ecall            <= right_instr and decode_ecall;
 
     -- Managing the instrucion fetch misses
     right_instr         <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
@@ -377,26 +389,31 @@ i_csr_unit: csr_unit port map (
      b            => b_bus,
      c            => c_csr,
 
-     m_epc_set    => decode_is_exception,
-     m_epc        => pc,
+     m_epc_set    => decode_m_int_enter,
+     m_epc_in     => pc,
+     m_epc_out    => exec_m_epc,
 
      m_tval_set   => m_tval_set,
      m_tval       => m_tval,
 
-     m_cause_set  => decode_is_exception,
+     -- For updating mstatus
+     m_int_enter  => decode_m_int_enter,
+     m_int_return => decode_m_int_return,
+
+     m_cause_set  => decode_m_int_enter,
      m_cause      => decode_mcause,
 
-     m_ie         => m_ie,
+     m_ie         => exec_m_ie,
 
-     m_eie        => m_eie,
-     m_tie        => m_tie,
-     m_sie        => m_sie,
+     m_eie        => exec_m_eie,
+     m_tie        => exec_m_tie,
+     m_sie        => exec_m_sie,
      m_eip        => m_eip,
      m_tip        => m_tip,
      m_sip        => m_sip,
 
-     m_tvec_base  => m_tvec_base,
-     m_tvec_flag  => m_tvec_flag
+     m_tvec_base  => exec_m_tvec_base,
+     m_tvec_flag  => exec_m_tvec_flag
 ); 
 
 i_shifter: shifter port map (
