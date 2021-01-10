@@ -17,7 +17,7 @@ This is currently targeted at Xilinx 7-series parts, but there is no part-specif
 
 ## Building
 
-- Make user your EDA tools are set up (Vivado)
+- Make sure your EDA tools are set up (Vivado)
 - cd into the build directory for your target board
 - run "build.sh" or "build.bat" depending on your OS
 
@@ -29,16 +29,18 @@ Currently you can run a a check of the basic functioning of the RV32I ISA:
 - run "isa_check.sh" or "isa_check.bat" depending on your OS
 
 ## Project Status
+- Can currently build and run C code (see sw/crt0/ for an example)
 - Currently in testing.
-- Can run all RV32I instructions in a test program.
-- Instruction fetch logic is very sub-optimal
+- Can run all RV32I instructions, and a few protected ones.
+- Instruction fetch logic is very sub-optimal, but works
 - Implements at > 100MHz on Artix-7
 
 ## Current features
 - RV32I instruction support
 - Most instructions are single cycle (except jumps due to pipeline flush and load/store due to memory stalls)
+- Software exceptions are well on the way to completed
+- Only a limited subset of CSRs are supported - look in hdl/cpu/csr for details
 
 ## Known issues
-- Unknown instructions will halt the CPU (as no functional unit is enabled, so no instruciton completes)
-- Unaligned memory accesses are not yet supported
-- An I-cache is required, but worked around using dual-port memory.
+- Unaligned memory accesses are not yet supported, but do not cause an exception.
+- An I-cache is required, but current workaround is using dual-port memory.
