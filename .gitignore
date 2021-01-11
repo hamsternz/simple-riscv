@@ -11,3 +11,4 @@ sim/scripts/isa_check.sim
 sim/scripts/isa_check.xpr
 sim/scripts/vivado*
 sw/crt0/basys3_serial
+sw/asm/isa_test
