@@ -6,7 +6,7 @@ echo source build.tcl | vivado -mode tcl
 if [ ! -f bitstreams/basys3_top_level.bit ]
 then
   echo BUILD FAILED
-  return 1
+  exit 1
 fi
 echo Build OK
-return 0
+exit 0
