@@ -50,4 +50,4 @@ save_project_as isa_check -force
 set_property top tb_top_level [get_fileset sim_1]
 launch_simulation -simset sim_1 -mode behavioral
 run 6us
-quit
+exit 0

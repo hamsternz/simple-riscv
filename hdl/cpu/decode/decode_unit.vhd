@@ -505,6 +505,7 @@ process(clk)
                                             decode_ebreak <= '1';
                                        when "001100000010" => 
                                             ------------- MRET --------------
+                                            decode_m_int_return       <= '1';
                                             decode_jump_enable        <= '1';
                                             decode_alu_enable         <= '0';
                                             decode_shift_enable       <= '0';
@@ -515,7 +516,6 @@ process(clk)
                                             decode_select_b           <= B_BUS_IMMEDIATE; -- Not sure if needed
                                             decode_pc_mode            <= PC_JMP_REG_RELATIVE;
                                             decode_mcause             <= intex_exception_cause;
-                                            decode_m_int_return       <= '1';
                                             decode_pc_jump_offset     <= exec_m_epc;
                                        when others =>
                                    end case;
