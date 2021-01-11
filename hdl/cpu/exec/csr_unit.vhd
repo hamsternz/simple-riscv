@@ -92,6 +92,7 @@ architecture Behavioral of csr_unit is
   signal local_csr_complete    : std_logic := '0';
   signal local_csr_failed      : std_logic := '0';
   signal local_csr_result      : std_logic_vector(31 downto 0) := (others => '0');
+  signal high_word             : std_logic := '0';
 
   component csr_300_mstatus is
   port ( clk          : in  STD_LOGIC;
@@ -248,6 +249,38 @@ architecture Behavioral of csr_unit is
   signal csr_344_failed        : std_logic := '0';
   signal csr_344_result        : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_C00_C80_cycle is
+  port ( clk           : in  STD_LOGIC;
+         csr_mode      : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active    : in  STD_LOGIC;
+         csr_high_word : in  STD_LOGIC;
+         csr_value     : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_complete  : out STD_LOGIC;
+         csr_failed    : out STD_LOGIC;
+         csr_result    : out STD_LOGIC_VECTOR(31 downto 0)
+  );
+  end component;
+  signal csr_C00_C80_active        : std_logic := '0';
+  signal csr_C00_C80_complete      : std_logic := '0';
+  signal csr_C00_C80_failed        : std_logic := '0';
+  signal csr_C00_C80_result        : std_logic_vector(31 downto 0) := (others => '0');
+
+  component csr_C01_C81_time is
+  port ( clk           : in  STD_LOGIC;
+         csr_mode      : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active    : in  STD_LOGIC;
+         csr_high_word : in  STD_LOGIC;
+         csr_value     : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_complete  : out STD_LOGIC;
+         csr_failed    : out STD_LOGIC;
+         csr_result    : out STD_LOGIC_VECTOR(31 downto 0);
+         max_count     : in  STD_LOGIC_VECTOR(9 downto 0)
+  );
+  end component;
+  signal csr_C01_C81_active        : std_logic := '0';
+  signal csr_C01_C81_complete      : std_logic := '0';
+  signal csr_C01_C81_failed        : std_logic := '0';
+  signal csr_C01_C81_result        : std_logic_vector(31 downto 0) := (others => '0');
 
   component csr_F11_mvendorid is
   port ( clk          : in  STD_LOGIC;
@@ -329,54 +362,70 @@ begin
    local_csr_complete <= csr_F11_complete OR csr_F12_complete OR csr_F13_complete OR csr_F14_complete 
                       OR csr_300_complete OR csr_301_complete OR csr_305_complete OR csr_305_complete
                       OR csr_340_complete OR csr_341_complete OR csr_342_complete OR csr_343_complete OR csr_344_complete
+                      OR csr_C00_C80_complete OR csr_C01_C81_complete
                       OR csr_other_complete;
 
    local_csr_failed   <= csr_F11_failed   OR csr_F12_failed   OR csr_F13_failed   OR csr_F14_failed
                       OR csr_300_failed   OR csr_301_failed   OR csr_304_failed   OR csr_305_failed  
                       OR csr_340_failed   OR csr_341_failed   OR csr_342_failed   OR csr_343_failed   OR csr_344_failed
+                      OR csr_C00_C80_failed OR csr_C01_C81_failed
                       OR csr_other_failed;
 
    local_csr_result   <= csr_F11_result   OR csr_F12_result   OR csr_F13_result   OR csr_F14_result
                       OR csr_300_result   OR csr_301_result   OR csr_304_result   OR csr_305_result
                       OR csr_340_result   OR csr_341_result   OR csr_342_result   OR csr_343_result   OR csr_344_result
+                      OR csr_C00_C80_result OR csr_C01_C81_result
                       OR csr_other_result;
 
 process(clk)
    begin
       if rising_edge(clk) then
+         high_word          <= '0';
          --------------------------------------------------------------- 
          -- Assert the enable signal for the desired CSR
          ---------------------------------------------------------------
-         csr_300_active   <= '0';
-         csr_301_active   <= '0';
-         csr_304_active   <= '0';
-         csr_305_active   <= '0';
-         csr_340_active   <= '0';
-         csr_341_active   <= '0';
-         csr_342_active   <= '0';
-         csr_343_active   <= '0';
-         csr_344_active   <= '0';
-         csr_F11_active   <= '0';
-         csr_F12_active   <= '0';
-         csr_F13_active   <= '0';
-         csr_F14_active   <= '0'; 
-         csr_other_active <= '0'; 
+         csr_300_active     <= '0';
+         csr_301_active     <= '0';
+         csr_304_active     <= '0';
+         csr_305_active     <= '0';
+         csr_340_active     <= '0';
+         csr_341_active     <= '0';
+         csr_342_active     <= '0';
+         csr_343_active     <= '0';
+         csr_344_active     <= '0';
+         csr_C00_C80_active <= '0';
+         csr_C01_C81_active <= '0';
+         csr_F11_active     <= '0';
+         csr_F12_active     <= '0';
+         csr_F11_active     <= '0';
+         csr_F12_active     <= '0';
+         csr_F13_active     <= '0';
+         csr_F14_active     <= '0'; 
+         csr_other_active   <= '0'; 
          if local_csr_in_progress = '1' and local_csr_complete = '0' and local_csr_failed = '0' then
             case local_csr_reg is 
-                when x"300" => csr_300_active   <= '1'; -- mstatus
-                when x"301" => csr_301_active   <= '1'; -- misa
-                when x"304" => csr_304_active   <= '1'; -- mie  
-                when x"305" => csr_305_active   <= '1'; -- mtvec      
-                when x"340" => csr_340_active   <= '1'; -- mscratch   
-                when x"341" => csr_341_active   <= '1'; -- mepc   
-                when x"342" => csr_342_active   <= '1'; -- mcause   
-                when x"343" => csr_343_active   <= '1'; -- mtval  
-                when x"344" => csr_344_active   <= '1'; -- mip   
-                when x"F11" => csr_F11_active   <= '1'; -- Vendor ID
-                when x"F12" => csr_F12_active   <= '1'; -- Architecture ID
-                when x"F13" => csr_F13_active   <= '1'; -- Vendor ID
-                when x"F14" => csr_F14_active   <= '1'; -- Architecture ID
-                when others => csr_other_active <= '1';
+                when x"300" => csr_300_active      <= '1'; -- mstatus
+                when x"301" => csr_301_active      <= '1'; -- misa
+                when x"304" => csr_304_active      <= '1'; -- mie  
+                when x"305" => csr_305_active      <= '1'; -- mtvec      
+                when x"340" => csr_340_active      <= '1'; -- mscratch   
+                when x"341" => csr_341_active      <= '1'; -- mepc   
+                when x"342" => csr_342_active      <= '1'; -- mcause   
+                when x"343" => csr_343_active      <= '1'; -- mtval  
+                when x"344" => csr_344_active      <= '1'; -- mip   
+                when x"C00" => csr_C00_C80_active  <= '1'; -- cycle
+                               high_word           <= '0';
+                when x"C01" => csr_C00_C80_active  <= '1'; -- time 
+                               high_word           <= '0';
+                when x"C80" => csr_C00_C80_active  <= '1'; -- cycleh
+                               high_word           <= '1';
+                when x"C81" => csr_C00_C80_active  <= '1'; -- timeh
+                               high_word           <= '1';
+                when x"F11" => csr_F11_active      <= '1'; -- Vendor ID
+                when x"F12" => csr_F12_active      <= '1'; -- Architecture ID
+                when x"F13" => csr_F13_active      <= '1'; -- Vendor ID
+                when x"F14" => csr_F14_active      <= '1'; -- Architecture ID
+                when others => csr_other_active    <= '1';
             end case;
          end if;
 
@@ -504,6 +553,29 @@ i_csr_344: csr_344_mip   port map (
     m_eie        => m_eie,
     m_tie        => m_tie,
     m_sie        => m_sie
+  );
+
+i_csr_C00_C80: csr_C00_C80_cycle port map ( 
+    clk           => clk, 
+    csr_active    => csr_C00_C80_active,
+    csr_mode      => local_csr_mode,
+    csr_high_word => high_word,
+    csr_value     => local_csr_value,
+    csr_complete  => csr_C00_C80_complete,
+    csr_failed    => csr_C00_C80_failed,
+    csr_result    => csr_C00_C80_result
+  );
+
+i_csr_C01_C81: csr_C01_C81_time  port map ( 
+    clk           => clk, 
+    csr_active    => csr_C00_C80_active,
+    csr_mode      => local_csr_mode,
+    csr_high_word => high_word,
+    csr_value     => local_csr_value,
+    csr_complete  => csr_C00_C80_complete,
+    csr_failed    => csr_C00_C80_failed,
+    csr_result    => csr_C00_C80_result,
+    max_count     => "0001100011" --  99
   );
 
 i_csr_F11: csr_F11_mvendorid port map ( 

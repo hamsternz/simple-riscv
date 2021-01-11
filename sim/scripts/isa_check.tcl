@@ -29,6 +29,8 @@ read_vhdl ../../hdl/cpu/csr/csr_341_mepc.vhd
 read_vhdl ../../hdl/cpu/csr/csr_342_mcause.vhd
 read_vhdl ../../hdl/cpu/csr/csr_343_mtval.vhd
 read_vhdl ../../hdl/cpu/csr/csr_344_mip.vhd
+read_vhdl ../../hdl/cpu/csr/csr_C00_C80_cycle.vhd
+read_vhdl ../../hdl/cpu/csr/csr_C01_C81_time.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F11_mvendorid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F12_marchid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F13_mimpid.vhd
