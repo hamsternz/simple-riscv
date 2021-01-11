@@ -44,11 +44,11 @@ entity csr_C01_C81_time is
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_complete : out STD_LOGIC;  
          csr_failed   : out STD_LOGIC;  
-         csr_result   : out STD_LOGIC_VECTOR(31 downto 0)l
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0);
          max_count    : in  STD_LOGIC_VECTOR( 9 downto 0)); 
 end entity;
 
-architecture Behavioral of csr_C01_C81_time
+architecture Behavioral of csr_C01_C81_time is
    signal complete : std_logic := '0';
    signal failed   : std_logic := '0';
    signal result   : std_logic_vector(31 downto 0) := (others => '0');
@@ -73,11 +73,11 @@ process(clk)
                when CSR_READ     =>
                   if csr_high_word = '0' then
                      complete    <= '1';
-                     value <= std_logic_vector(counter(63 downto 32));
+                     result <= std_logic_vector(counter(63 downto 32));
                      report "READ cycle high";
                   else
                      complete    <= '1';
-                     value <= std_logic_vector(counter(31 downto 0));
+                     result <= std_logic_vector(counter(31 downto 0));
                      report "READ cycle";
                   end if;
                when others   =>
@@ -86,9 +86,10 @@ process(clk)
          end if;
          if divider = 0 then
             counter <= counter+1;
-            divider <= max_count;
+            divider <= unsigned(max_count);
          else
             divider <= divider-1;
+         end if;
       end if;
    end process;  
 end Behavioral;

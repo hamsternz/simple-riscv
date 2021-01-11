@@ -47,7 +47,7 @@ entity csr_C00_C80_cycle is
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')); 
 end entity;
 
-architecture Behavioral of csr_C00_C80_cycle
+architecture Behavioral of csr_C00_C80_cycle is
    signal complete : std_logic := '0';
    signal failed   : std_logic := '0';
    signal result   : std_logic_vector(31 downto 0) := (others => '0');
@@ -71,11 +71,11 @@ process(clk)
                when CSR_READ     =>
                   if csr_high_word = '0' then
                      complete    <= '1';
-                     value <= std_logic_vector(counter(63 downto 32));
+                     result <= std_logic_vector(counter(63 downto 32));
                      report "READ cycle high";
                   else
                      complete    <= '1';
-                     value <= std_logic_vector(counter(31 downto 0));
+                     result <= std_logic_vector(counter(31 downto 0));
                      report "READ cycle";
                   end if;
                when others   =>
