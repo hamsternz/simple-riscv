@@ -36,7 +36,7 @@ use IEEE.numeric_std.all;
 
 use work.cpu_constants.ALL;
 
-entity csr_readlonly_zero is
+entity csr_readonly_zero is
   port ( clk          : in  STD_LOGIC;  
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
          csr_active   : in  STD_LOGIC;  
@@ -46,7 +46,7 @@ entity csr_readlonly_zero is
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0'));
 end entity;
 
-architecture Behavioral of csr_readlonly_zero is
+architecture Behavioral of csr_readonly_zero is
    signal complete     : std_logic := '0';
    signal failed       : std_logic := '0';
 begin
