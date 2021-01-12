@@ -677,9 +677,9 @@ i_csr_C01_C81: csr_C01_C81_time  port map (
     csr_mode      => local_csr_mode,
     csr_high_word => high_word,
     csr_value     => local_csr_value,
-    csr_complete  => csr_C00_C80_complete,
-    csr_failed    => csr_C00_C80_failed,
-    csr_result    => csr_C00_C80_result,
+    csr_complete  => csr_C01_C81_complete,
+    csr_failed    => csr_C01_C81_failed,
+    csr_result    => csr_C01_C81_result,
     max_count     => "0001100011" --  99
   );
 
