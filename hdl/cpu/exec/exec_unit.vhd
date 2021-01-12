@@ -205,6 +205,8 @@ architecture Behavioral of exec_unit is
              m_tip        : in  STD_LOGIC;
              m_sip        : in  STD_LOGIC;
 
+             inst_retired : in  STD_LOGIC;
+
              -- Trap vectors
              m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
              m_tvec_flag  : out STD_LOGIC
@@ -411,6 +413,7 @@ i_csr_unit: csr_unit port map (
      m_eip        => m_eip,
      m_tip        => m_tip,
      m_sip        => m_sip,
+     inst_retired => completed,
 
      m_tvec_base  => exec_m_tvec_base,
      m_tvec_flag  => exec_m_tvec_flag

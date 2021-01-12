@@ -34,10 +34,12 @@ read_vhdl ../../hdl/cpu/csr/csr_343_mtval.vhd
 read_vhdl ../../hdl/cpu/csr/csr_344_mip.vhd
 read_vhdl ../../hdl/cpu/csr/csr_C00_C80_cycle.vhd
 read_vhdl ../../hdl/cpu/csr/csr_C01_C81_time.vhd
+read_vhdl ../../hdl/cpu/csr/csr_C02_C82_retire.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F11_mvendorid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F12_marchid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F13_mimpid.vhd
 read_vhdl ../../hdl/cpu/csr/csr_F14_mhartid.vhd
+read_vhdl ../../hdl/cpu/csr/csr_readonly_zero.vhd
 read_vhdl ../../hdl/cpu/csr/csr_other.vhd
 
 # The Program ROM and RAM

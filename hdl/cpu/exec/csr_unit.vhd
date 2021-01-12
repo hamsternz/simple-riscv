@@ -77,6 +77,7 @@ entity csr_unit is
          m_tip        : in  STD_LOGIC;
          m_sip        : in  STD_LOGIC;
 
+         inst_retired : in  STD_LOGIC;
          -- Trap vectors
          m_tvec_base  : out STD_LOGIC_VECTOR(31 downto 0);
          m_tvec_flag  : out STD_LOGIC
@@ -93,6 +94,20 @@ architecture Behavioral of csr_unit is
   signal local_csr_failed      : std_logic := '0';
   signal local_csr_result      : std_logic_vector(31 downto 0) := (others => '0');
   signal high_word             : std_logic := '0';
+
+  component csr_readonly_zero is
+  port ( clk          : in  STD_LOGIC;
+         csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active   : in  STD_LOGIC;
+         csr_complete : out STD_LOGIC;
+         csr_failed   : out STD_LOGIC;
+         csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_result   : out STD_LOGIC_VECTOR(31 downto 0));
+  end component;
+  signal csr_rozero_active        : std_logic := '0';
+  signal csr_rozero_complete      : std_logic := '0';
+  signal csr_rozero_failed        : std_logic := '0';
+  signal csr_rozero_result        : std_logic_vector(31 downto 0) := (others => '0');
 
   component csr_300_mstatus is
   port ( clk          : in  STD_LOGIC;
@@ -282,6 +297,23 @@ architecture Behavioral of csr_unit is
   signal csr_C01_C81_failed        : std_logic := '0';
   signal csr_C01_C81_result        : std_logic_vector(31 downto 0) := (others => '0');
 
+  component csr_C02_C82_retire is
+  port ( clk           : in  STD_LOGIC;
+         csr_mode      : in  STD_LOGIC_VECTOR(2 downto 0);
+         csr_active    : in  STD_LOGIC;
+         csr_high_word : in  STD_LOGIC;
+         csr_value     : in  STD_LOGIC_VECTOR(31 downto 0);
+         csr_complete  : out STD_LOGIC;
+         csr_failed    : out STD_LOGIC;
+         csr_result    : out STD_LOGIC_VECTOR(31 downto 0);
+         inst_retired  : in  STD_LOGIC
+  );
+  end component;
+  signal csr_C02_C82_active        : std_logic := '0';
+  signal csr_C02_C82_complete      : std_logic := '0';
+  signal csr_C02_C82_failed        : std_logic := '0';
+  signal csr_C02_C82_result        : std_logic_vector(31 downto 0) := (others => '0');
+
   component csr_F11_mvendorid is
   port ( clk          : in  STD_LOGIC;
          csr_mode     : in  STD_LOGIC_VECTOR(2 downto 0);
@@ -359,23 +391,23 @@ begin
    c             <= local_csr_result;
 
    -- Merge back all the status and result signals
-   local_csr_complete <= csr_F11_complete OR csr_F12_complete OR csr_F13_complete OR csr_F14_complete 
-                      OR csr_300_complete OR csr_301_complete OR csr_305_complete OR csr_305_complete
-                      OR csr_340_complete OR csr_341_complete OR csr_342_complete OR csr_343_complete OR csr_344_complete
-                      OR csr_C00_C80_complete OR csr_C01_C81_complete
-                      OR csr_other_complete;
+   local_csr_complete <= csr_F11_complete     OR csr_F12_complete     OR csr_F13_complete OR csr_F14_complete 
+                      OR csr_300_complete     OR csr_301_complete     OR csr_305_complete OR csr_305_complete
+                      OR csr_340_complete     OR csr_341_complete     OR csr_342_complete OR csr_343_complete OR csr_344_complete
+                      OR csr_C00_C80_complete OR csr_C01_C81_complete OR csr_C02_C82_complete
+                      OR csr_rozero_complete  OR csr_other_complete;
 
-   local_csr_failed   <= csr_F11_failed   OR csr_F12_failed   OR csr_F13_failed   OR csr_F14_failed
-                      OR csr_300_failed   OR csr_301_failed   OR csr_304_failed   OR csr_305_failed  
-                      OR csr_340_failed   OR csr_341_failed   OR csr_342_failed   OR csr_343_failed   OR csr_344_failed
-                      OR csr_C00_C80_failed OR csr_C01_C81_failed
-                      OR csr_other_failed;
+   local_csr_failed   <= csr_F11_failed       OR csr_F12_failed       OR csr_F13_failed   OR csr_F14_failed
+                      OR csr_300_failed       OR csr_301_failed       OR csr_304_failed   OR csr_305_failed  
+                      OR csr_340_failed       OR csr_341_failed       OR csr_342_failed   OR csr_343_failed   OR csr_344_failed
+                      OR csr_C00_C80_failed   OR csr_C01_C81_failed   OR csr_C02_C82_failed
+                      OR csr_rozero_failed    OR csr_other_failed;
 
-   local_csr_result   <= csr_F11_result   OR csr_F12_result   OR csr_F13_result   OR csr_F14_result
-                      OR csr_300_result   OR csr_301_result   OR csr_304_result   OR csr_305_result
-                      OR csr_340_result   OR csr_341_result   OR csr_342_result   OR csr_343_result   OR csr_344_result
-                      OR csr_C00_C80_result OR csr_C01_C81_result
-                      OR csr_other_result;
+   local_csr_result   <= csr_F11_result       OR csr_F12_result       OR csr_F13_result   OR csr_F14_result
+                      OR csr_300_result       OR csr_301_result       OR csr_304_result   OR csr_305_result
+                      OR csr_340_result       OR csr_341_result       OR csr_342_result   OR csr_343_result   OR csr_344_result
+                      OR csr_C00_C80_result   OR csr_C01_C81_result   OR csr_C02_C82_result
+                      OR csr_rozero_result    OR csr_other_result;
 
 process(clk)
    begin
@@ -395,12 +427,14 @@ process(clk)
          csr_344_active     <= '0';
          csr_C00_C80_active <= '0';
          csr_C01_C81_active <= '0';
+         csr_C02_C82_active <= '0';
          csr_F11_active     <= '0';
          csr_F12_active     <= '0';
          csr_F11_active     <= '0';
          csr_F12_active     <= '0';
          csr_F13_active     <= '0';
          csr_F14_active     <= '0'; 
+         csr_rozero_active  <= '0'; 
          csr_other_active   <= '0'; 
          if local_csr_in_progress = '1' and local_csr_complete = '0' and local_csr_failed = '0' then
             case local_csr_reg is 
@@ -414,13 +448,74 @@ process(clk)
                 when x"343" => csr_343_active      <= '1'; -- mtval  
                 when x"344" => csr_344_active      <= '1'; -- mip   
                 when x"C00" => csr_C00_C80_active  <= '1'; -- cycle
-                               high_word           <= '0';
-                when x"C01" => csr_C00_C80_active  <= '1'; -- time 
-                               high_word           <= '0';
+                when x"C01" => csr_C01_C81_active  <= '1'; -- time 
+                when x"C02" => csr_C02_C82_active  <= '1'; -- retired
+                when x"C03" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C04" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C05" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C06" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C07" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C08" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C09" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C0A" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C0B" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C0C" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C0D" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C0E" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C0F" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C10" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C11" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C12" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C13" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C14" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C15" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C16" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C17" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C18" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C19" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C1A" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C1B" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C1C" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C1D" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C1E" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C1F" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+
                 when x"C80" => csr_C00_C80_active  <= '1'; -- cycleh
                                high_word           <= '1';
-                when x"C81" => csr_C00_C80_active  <= '1'; -- timeh
+                when x"C81" => csr_C01_C81_active  <= '1'; -- timeh
                                high_word           <= '1';
+                when x"C82" => csr_C02_C82_active  <= '1'; -- retiredh
+                               high_word           <= '1';
+                when x"C83" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C84" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C85" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C86" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C87" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C88" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C89" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C8A" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C8B" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C8C" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C8D" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C8E" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C8F" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C90" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C91" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C92" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C93" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C94" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C95" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C96" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C97" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C98" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C99" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C9A" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C9B" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C9C" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C9D" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C9E" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+                when x"C9F" => csr_rozero_active   <= '1'; -- Unimplemented  perf counter
+
                 when x"F11" => csr_F11_active      <= '1'; -- Vendor ID
                 when x"F12" => csr_F12_active      <= '1'; -- Architecture ID
                 when x"F13" => csr_F13_active      <= '1'; -- Vendor ID
@@ -446,6 +541,16 @@ process(clk)
          end if; 
       end if;
    end process;
+
+i_csr_rozero: csr_readonly_zero port map ( 
+    clk          => clk, 
+    csr_active   => csr_rozero_active,
+    csr_mode     => local_csr_mode,
+    csr_value    => local_csr_value,
+    csr_complete => csr_rozero_complete,
+    csr_failed   => csr_rozero_failed,
+    csr_result   => csr_rozero_result
+  );
 
 i_csr_300: csr_300_mstatus port map ( 
     clk          => clk, 
@@ -576,6 +681,18 @@ i_csr_C01_C81: csr_C01_C81_time  port map (
     csr_failed    => csr_C00_C80_failed,
     csr_result    => csr_C00_C80_result,
     max_count     => "0001100011" --  99
+  );
+
+i_csr_C02_C82: csr_C02_C82_retire  port map ( 
+    clk           => clk, 
+    csr_active    => csr_C02_C82_active,
+    csr_mode      => local_csr_mode,
+    csr_high_word => high_word,
+    csr_value     => local_csr_value,
+    csr_complete  => csr_C02_C82_complete,
+    csr_failed    => csr_C02_C82_failed,
+    csr_result    => csr_C02_C82_result,
+    inst_retired  => inst_retired
   );
 
 i_csr_F11: csr_F11_mvendorid port map ( 
