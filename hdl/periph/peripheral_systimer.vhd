@@ -46,7 +46,7 @@ entity peripheral_systimer is
          bus_write_data  : in  STD_LOGIC_VECTOR(31 downto 0);
          bus_read_data   : out STD_LOGIC_VECTOR(31 downto 0);
 
-         timer_interrupt : out STD_LOGIC);
+         interrupt_timer : out STD_LOGIC);
 
 end entity;
 

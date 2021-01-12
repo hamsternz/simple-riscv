@@ -37,22 +37,29 @@ use IEEE.NUMERIC_STD.ALL;
 use work.cpu_constants.ALL;
 
 entity intex_unit is
-    Port (  clk                       : in  STD_LOGIC;
-            reset                     : in  STD_LOGIC;
+    Port (  clk                          : in  STD_LOGIC;
+            reset                        : in  STD_LOGIC;
 
-            intex_exception_raise     : out STD_LOGIC;
-            intex_exception_cause     : out STD_LOGIC_VECTOR (31 downto 0);
-            intex_exception_vector    : out STD_LOGIC_VECTOR (31 downto 0);
+            interrupt_timer              : in  STD_LOGIC;
+            interrupt_external           : in  STD_LOGIC;
 
-            exec_except_instr_misaligned : in std_logic;
-            exec_except_instr_access     : in std_logic;
-            exec_except_illegal_instr    : in std_logic;
-            exec_except_ebreak           : in std_logic;
-            exec_except_ecall            : in std_logic;
-            exec_except_load_misaligned  : in std_logic;
-            exec_except_load_access      : in std_logic;
-            exec_except_store_misaligned : in std_logic;
-            exec_except_store_access     : in std_logic;
+            intex_exception_raise        : out STD_LOGIC;
+            intex_exception_cause        : out STD_LOGIC_VECTOR (31 downto 0);
+            intex_exception_vector       : out STD_LOGIC_VECTOR (31 downto 0);
+
+            intex_m_eip                  : out STD_LOGIC;
+            intex_m_tip                  : out STD_LOGIC;
+            intex_m_sip                  : out STD_LOGIC;
+
+            exec_except_instr_misaligned : in  std_logic;
+            exec_except_instr_access     : in  std_logic;
+            exec_except_illegal_instr    : in  std_logic;
+            exec_except_ebreak           : in  std_logic;
+            exec_except_ecall            : in  std_logic;
+            exec_except_load_misaligned  : in  std_logic;
+            exec_except_load_access      : in  std_logic;
+            exec_except_store_misaligned : in  std_logic;
+            exec_except_store_access     : in  std_logic;
 
             -----------------------------
             -- From the CSR Unit

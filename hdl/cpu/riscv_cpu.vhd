@@ -43,7 +43,9 @@ entity riscv_cpu is
           progmem_data_valid : in  STD_LOGIC;
 
           reset              : in  STD_LOGIC;
-          timer_interrupt    : in  STD_LOGIC;
+          interrupt_timer    : in  STD_LOGIC;
+          interrupt_external : in  STD_LOGIC;
+
 
           bus_busy           : in  STD_LOGIC;
           bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
@@ -100,6 +102,7 @@ architecture Behavioral of riscv_cpu is
 
             -- To the exec unit
             reset                     : in  STD_LOGIC;
+
 
             -- From the interrupt/exception unit
             intex_exception_raise     : in  STD_LOGIC;
@@ -320,19 +323,22 @@ architecture Behavioral of riscv_cpu is
     signal exec_m_eie                : STD_LOGIC;
     signal exec_m_tie                : STD_LOGIC;
     signal exec_m_sie                : STD_LOGIC;
-    signal m_eip                : STD_LOGIC;
-    signal m_tip                : STD_LOGIC;
-    signal m_sip                : STD_LOGIC;
     signal exec_m_tvec_base          : STD_LOGIC_VECTOR(31 downto 0);
     signal exec_m_tvec_flag          : STD_LOGIC;
 
     component intex_unit is
     Port (  clk                       : in  STD_LOGIC;
             reset                     : in  STD_LOGIC;
+            interrupt_timer           : in  STD_LOGIC;
+            interrupt_external        : in  STD_LOGIC;
 
             intex_exception_raise     : out STD_LOGIC;
             intex_exception_cause     : out STD_LOGIC_VECTOR (31 downto 0);
             intex_exception_vector    : out STD_LOGIC_VECTOR (31 downto 0);
+
+            intex_m_eip               : out STD_LOGIC;
+            intex_m_tip               : out STD_LOGIC;
+            intex_m_sip               : out STD_LOGIC;
 
             exec_except_instr_misaligned : in std_logic;
             exec_except_instr_access     : in std_logic;
@@ -361,6 +367,9 @@ architecture Behavioral of riscv_cpu is
     signal intex_exception_raise        : STD_LOGIC;
     signal intex_exception_cause        : STD_LOGIC_VECTOR (31 downto 0);
     signal intex_exception_vector       : STD_LOGIC_VECTOR (31 downto 0);
+    signal intex_m_eip                  : STD_LOGIC;
+    signal intex_m_tip                  : STD_LOGIC;
+    signal intex_m_sip                  : STD_LOGIC;
 
     signal exec_except_instr_misaligned : std_logic := '0';
     signal exec_except_instr_access     : std_logic := '0';
@@ -468,9 +477,9 @@ exec: exec_unit port map (
         exec_m_eie                => exec_m_eie,
         exec_m_tie                => exec_m_tie,
         exec_m_sie                => exec_m_sie,
-        m_eip                     => m_eip,
-        m_tip                     => m_tip,
-        m_sip                     => m_sip,
+        m_eip                     => intex_m_eip,
+        m_tip                     => intex_m_tip,
+        m_sip                     => intex_m_sip,
         exec_m_tvec_base          => exec_m_tvec_base,
         exec_m_tvec_flag          => exec_m_tvec_flag,
 
@@ -553,10 +562,16 @@ exec: exec_unit port map (
 i_intex_unit: intex_unit port map (
         clk                          => clk,
         reset                        => reset,
+        interrupt_timer              => interrupt_timer,
+        interrupt_external           => interrupt_external,
 
         intex_exception_raise        => intex_exception_raise,
         intex_exception_cause        => intex_exception_cause,
         intex_exception_vector       => intex_exception_vector,
+
+        intex_m_eip                  => intex_m_eip,
+        intex_m_tip                  => intex_m_tip,
+        intex_m_sip                  => intex_m_sip,
 
         exec_except_instr_misaligned => exec_except_instr_misaligned,
         exec_except_instr_access     => exec_except_instr_access,

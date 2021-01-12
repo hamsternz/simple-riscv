@@ -60,7 +60,8 @@ architecture Behavioral of top_level_expanded is
                  progmem_data_valid : in  STD_LOGIC;
 
                  reset              : in  STD_LOGIC;
-                 timer_interrupt    : in  STD_LOGIC;
+                 interrupt_timer    : in  STD_LOGIC;
+                 interrupt_external : in  STD_LOGIC;
 
                  bus_busy           : in  STD_LOGIC;
                  bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
@@ -80,7 +81,8 @@ architecture Behavioral of top_level_expanded is
     signal progmem_data       : STD_LOGIC_VECTOR(31 downto 0);
     signal progmem_data_addr  : STD_LOGIC_VECTOR(31 downto 0);
     signal progmem_data_valid : STD_LOGIC;
-    signal timer_interrupt    : STD_LOGIC;
+    signal interrupt_timer    : STD_LOGIC;
+    signal interrupt_external : STD_LOGIC := '0';
 
     component program_memory is
     port ( clk                : in  STD_LOGIC;
@@ -256,7 +258,7 @@ architecture Behavioral of top_level_expanded is
            bus_write_data  : in  STD_LOGIC_VECTOR(31 downto 0);
            bus_read_data   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-           timer_interrupt : out STD_LOGIC);
+           interrupt_timer : out STD_LOGIC);
     end component;
 
     component peripheral_serial is
@@ -302,7 +304,8 @@ i_riscv_cpu: riscv_cpu port map (
        progmem_data_valid => progmem_data_valid,
                  
        reset              => reset_sr(0),
-       timer_interrupt    => timer_interrupt,
+       interrupt_timer    => interrupt_timer,
+       interrupt_external => interrupt_external,
                  
        bus_busy           => cpu_bus_busy,
        bus_addr           => cpu_bus_addr,
@@ -457,6 +460,6 @@ i_peripheral_systimer: peripheral_systimer generic map ( clock_freq => clock_fre
        bus_write_mask  => m22_bus_write_mask,
        bus_write_data  => m22_bus_write_data,
        bus_read_data   => m22_bus_read_data,
-       timer_interrupt => timer_interrupt);
+       interrupt_timer => interrupt_timer);
 
 end Behavioral;
