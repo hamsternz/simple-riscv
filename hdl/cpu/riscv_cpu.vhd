@@ -43,6 +43,7 @@ entity riscv_cpu is
           progmem_data_valid : in  STD_LOGIC;
 
           reset              : in  STD_LOGIC;
+          timer_interrupt    : in  STD_LOGIC;
 
           bus_busy           : in  STD_LOGIC;
           bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);

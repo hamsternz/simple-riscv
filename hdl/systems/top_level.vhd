@@ -57,19 +57,20 @@ architecture Behavioral of top_level is
           progmem_data       : in  STD_LOGIC_VECTOR(31 downto 0);
           progmem_data_valid : in  STD_LOGIC;
 
-          reset         : in  STD_LOGIC;
+          reset              : in  STD_LOGIC;
+          timer_interrupt    : in  STD_LOGIC;
 
-          bus_busy      : in  STD_LOGIC;
-          bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
-          bus_width     : out STD_LOGIC_VECTOR(1 downto 0);  
-          bus_dout      : out STD_LOGIC_VECTOR(31 downto 0);
-          bus_write     : out STD_LOGIC;
-          bus_enable    : out STD_LOGIC;
-          bus_din       : in  STD_LOGIC_VECTOR(31 downto 0);
+          bus_busy           : in  STD_LOGIC;
+          bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
+          bus_width          : out STD_LOGIC_VECTOR(1 downto 0);  
+          bus_dout           : out STD_LOGIC_VECTOR(31 downto 0);
+          bus_write          : out STD_LOGIC;
+          bus_enable         : out STD_LOGIC;
+          bus_din            : in  STD_LOGIC_VECTOR(31 downto 0);
 
-          debug_pc      : out STD_LOGIC_VECTOR(31 downto 0);
-          debug_sel     : in  STD_LOGIC_VECTOR(4 downto 0);
-          debug_data    : out STD_LOGIC_VECTOR(31 downto 0)
+          debug_pc           : out STD_LOGIC_VECTOR(31 downto 0);
+          debug_sel          : in  STD_LOGIC_VECTOR( 4 downto 0);
+          debug_data         : out STD_LOGIC_VECTOR(31 downto 0)
     );
     end component;
 
@@ -202,8 +203,10 @@ process(clk)
    end process;
 
 i_riscv_cpu: riscv_cpu port map(
-       clk            => clk,
-       reset          => reset_sr(0),
+       clk                 => clk,
+
+       reset               => reset_sr(0),
+       timer_interrupt     => '0',
        
        progmem_enable      => progmem_enable,
        progmem_addr        => progmem_addr,

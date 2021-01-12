@@ -51,7 +51,7 @@ read_vhdl ../../hdl/bus/bus_bridge.vhd
 read_vhdl ../../hdl/bus/bus_expander.vhd
 read_vhdl ../../hdl/periph/peripheral_serial.vhd
 read_vhdl ../../hdl/periph/peripheral_gpio.vhd
-read_vhdl ../../hdl/periph/peripheral_millis.vhd
+read_vhdl ../../hdl/periph/peripheral_systimer.vhd
 
 # board specific stuff
 read_vhdl ../../boards/basys3/hdl/basys3_top_level_expanded.vhd

@@ -59,19 +59,20 @@ architecture Behavioral of top_level_expanded is
                  progmem_data_addr  : in  STD_LOGIC_VECTOR(31 downto 0);
                  progmem_data_valid : in  STD_LOGIC;
 
-                 reset         : in  STD_LOGIC;
+                 reset              : in  STD_LOGIC;
+                 timer_interrupt    : in  STD_LOGIC;
 
-                 bus_busy      : in  STD_LOGIC;
-                 bus_addr      : out STD_LOGIC_VECTOR(31 downto 0);
-                 bus_width     : out STD_LOGIC_VECTOR(1 downto 0);
-                 bus_write     : out STD_LOGIC;
-                 bus_enable    : out STD_LOGIC;
-                 bus_dout      : out STD_LOGIC_VECTOR(31 downto 0);
-                 bus_din       : in  STD_LOGIC_VECTOR(31 downto 0);
+                 bus_busy           : in  STD_LOGIC;
+                 bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
+                 bus_width          : out STD_LOGIC_VECTOR(1 downto 0);
+                 bus_write          : out STD_LOGIC;
+                 bus_enable         : out STD_LOGIC;
+                 bus_dout           : out STD_LOGIC_VECTOR(31 downto 0);
+                 bus_din            : in  STD_LOGIC_VECTOR(31 downto 0);
 
-                 debug_pc      : out STD_LOGIC_VECTOR(31 downto 0);
-                 debug_sel     : in  STD_LOGIC_VECTOR(4 downto 0);
-                 debug_data    : out STD_LOGIC_VECTOR(31 downto 0));
+                 debug_pc           : out STD_LOGIC_VECTOR(31 downto 0);
+                 debug_sel          : in  STD_LOGIC_VECTOR(4 downto 0);
+                 debug_data         : out STD_LOGIC_VECTOR(31 downto 0));
     end component;
 
     signal progmem_enable     : STD_LOGIC;
@@ -79,6 +80,7 @@ architecture Behavioral of top_level_expanded is
     signal progmem_data       : STD_LOGIC_VECTOR(31 downto 0);
     signal progmem_data_addr  : STD_LOGIC_VECTOR(31 downto 0);
     signal progmem_data_valid : STD_LOGIC;
+    signal timer_interrupt    : STD_LOGIC;
 
     component program_memory is
     port ( clk                : in  STD_LOGIC;
@@ -243,18 +245,18 @@ architecture Behavioral of top_level_expanded is
            gpio           : inout STD_LOGIC_VECTOR);
     end component;
 
-    component peripheral_millis is
+    component peripheral_systimer is
     generic ( clock_freq : natural);
-    port ( clk            : in  STD_LOGIC;
+    port ( clk             : in  STD_LOGIC;
 
-           bus_busy       : out STD_LOGIC;
-           bus_addr       : in  STD_LOGIC_VECTOR(3 downto 2);
-           bus_enable     : in  STD_LOGIC;
-           bus_write_mask : in  STD_LOGIC_VECTOR(3 downto 0);
-           bus_write_data : in  STD_LOGIC_VECTOR(31 downto 0);
-           bus_read_data  : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+           bus_busy        : out STD_LOGIC;
+           bus_addr        : in  STD_LOGIC_VECTOR(3 downto 2);
+           bus_enable      : in  STD_LOGIC;
+           bus_write_mask  : in  STD_LOGIC_VECTOR(3 downto 0);
+           bus_write_data  : in  STD_LOGIC_VECTOR(31 downto 0);
+           bus_read_data   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
-           gpio           : inout STD_LOGIC_VECTOR);
+           timer_interrupt : out STD_LOGIC);
     end component;
 
     component peripheral_serial is
@@ -291,7 +293,7 @@ process(clk)
    end process;
 
 i_riscv_cpu: riscv_cpu port map (
-       clk           => clk,
+       clk                => clk,
 
        progmem_enable     => progmem_enable,
        progmem_addr       => progmem_addr,
@@ -299,19 +301,20 @@ i_riscv_cpu: riscv_cpu port map (
        progmem_data_addr  => progmem_data_addr,
        progmem_data_valid => progmem_data_valid,
                  
-       reset         => reset_sr(0),
+       reset              => reset_sr(0),
+       timer_interrupt    => timer_interrupt,
                  
-       bus_busy      => cpu_bus_busy,
-       bus_addr      => cpu_bus_addr,
-       bus_width     => cpu_bus_width,
-       bus_write     => cpu_bus_write,
-       bus_enable    => cpu_bus_enable,
-       bus_dout      => cpu_bus_dout,
-       bus_din       => cpu_bus_din,
+       bus_busy           => cpu_bus_busy,
+       bus_addr           => cpu_bus_addr,
+       bus_width          => cpu_bus_width,
+       bus_write          => cpu_bus_write,
+       bus_enable         => cpu_bus_enable,
+       bus_dout           => cpu_bus_dout,
+       bus_din            => cpu_bus_din,
 
-       debug_pc      => debug_pc,
-       debug_sel     => debug_sel,
-       debug_data    => debug_data); 
+       debug_pc           => debug_pc,
+       debug_sel          => debug_sel,
+       debug_data         => debug_data); 
 
 
 i_bus_bridge: bus_bridge generic map (use_clk => bus_bridge_use_clk)  port map (
@@ -446,14 +449,14 @@ i_peripheral_gpio: peripheral_gpio port map (
        gpio           => gpio);
 
 
-i_peripheral_millis: peripheral_millis generic map ( clock_freq => clock_freq) port map ( 
-       clk            => clk,
-       bus_enable     => m22_bus_enable,
-       bus_addr       => m22_bus_addr(3 downto 2),
-       bus_busy       => m22_bus_busy, 
-       bus_write_mask => m22_bus_write_mask,
-       bus_write_data => m22_bus_write_data,
-       bus_read_data  => m22_bus_read_data,
-       gpio           => gpio);
+i_peripheral_systimer: peripheral_systimer generic map ( clock_freq => clock_freq) port map ( 
+       clk             => clk,
+       bus_enable      => m22_bus_enable,
+       bus_addr        => m22_bus_addr(3 downto 2),
+       bus_busy        => m22_bus_busy, 
+       bus_write_mask  => m22_bus_write_mask,
+       bus_write_data  => m22_bus_write_data,
+       bus_read_data   => m22_bus_read_data,
+       timer_interrupt => timer_interrupt);
 
 end Behavioral;
