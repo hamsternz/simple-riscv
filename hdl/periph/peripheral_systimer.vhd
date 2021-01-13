@@ -47,16 +47,24 @@ entity peripheral_systimer is
          bus_read_data   : out STD_LOGIC_VECTOR(31 downto 0);
 
          interrupt_timer : out STD_LOGIC);
-
 end entity;
 
 architecture Behavioral of peripheral_systimer is
     signal data_valid  : STD_LOGIC := '1';
-
     signal counter     : unsigned(63 downto 0) := (others => '0');
     signal counter_cmp : unsigned(63 downto 0) := (others => '0');
     signal divider     : unsigned(7 downto 0) := (others => '0');
 begin
+
+process(counter, counter_cmp) 
+begin
+    if counter <  counter_cmp then 
+        interrupt_timer <= '0';
+    else
+        interrupt_timer <= '1';
+    end if;
+end process;
+
 
 process(bus_enable, bus_write_mask, data_valid)
 begin
@@ -67,6 +75,7 @@ begin
         end if;
     end if;
 end process;
+
 
 process(clk) 
 begin
