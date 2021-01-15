@@ -45,6 +45,7 @@ entity riscv_cpu is
           reset              : in  STD_LOGIC;
           interrupt_timer    : in  STD_LOGIC;
           interrupt_external : in  STD_LOGIC;
+          interrupt_software : in  STD_LOGIC;
 
 
           bus_busy           : in  STD_LOGIC;
@@ -331,6 +332,7 @@ architecture Behavioral of riscv_cpu is
             reset                     : in  STD_LOGIC;
             interrupt_timer           : in  STD_LOGIC;
             interrupt_external        : in  STD_LOGIC;
+            interrupt_software        : in  STD_LOGIC;
 
             intex_exception_raise     : out STD_LOGIC;
             intex_exception_cause     : out STD_LOGIC_VECTOR (31 downto 0);
@@ -564,6 +566,7 @@ i_intex_unit: intex_unit port map (
         reset                        => reset,
         interrupt_timer              => interrupt_timer,
         interrupt_external           => interrupt_external,
+        interrupt_software           => interrupt_software,
 
         intex_exception_raise        => intex_exception_raise,
         intex_exception_cause        => intex_exception_cause,

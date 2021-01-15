@@ -62,6 +62,7 @@ architecture Behavioral of top_level_expanded is
                  reset              : in  STD_LOGIC;
                  interrupt_timer    : in  STD_LOGIC;
                  interrupt_external : in  STD_LOGIC;
+                 interrupt_software : in  STD_LOGIC;
 
                  bus_busy           : in  STD_LOGIC;
                  bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
@@ -83,6 +84,7 @@ architecture Behavioral of top_level_expanded is
     signal progmem_data_valid : STD_LOGIC;
     signal interrupt_timer    : STD_LOGIC;
     signal interrupt_external : STD_LOGIC := '0';
+    signal interrupt_software : STD_LOGIC := '0';
 
     component program_memory is
     port ( clk                : in  STD_LOGIC;
@@ -306,6 +308,7 @@ i_riscv_cpu: riscv_cpu port map (
        reset              => reset_sr(0),
        interrupt_timer    => interrupt_timer,
        interrupt_external => interrupt_external,
+       interrupt_software => interrupt_software,
                  
        bus_busy           => cpu_bus_busy,
        bus_addr           => cpu_bus_addr,

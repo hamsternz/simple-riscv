@@ -60,6 +60,7 @@ architecture Behavioral of top_level is
           reset              : in  STD_LOGIC;
           interrupt_timer    : in  STD_LOGIC;
           interrupt_external : in  STD_LOGIC;
+          interrupt_software : in  STD_LOGIC;
 
           bus_busy           : in  STD_LOGIC;
           bus_addr           : out STD_LOGIC_VECTOR(31 downto 0);
@@ -209,6 +210,7 @@ i_riscv_cpu: riscv_cpu port map(
        reset               => reset_sr(0),
        interrupt_timer     => '0',
        interrupt_external  => '0',
+       interrupt_software  => '0',
        
        progmem_enable      => progmem_enable,
        progmem_addr        => progmem_addr,

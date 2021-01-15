@@ -42,6 +42,7 @@ entity intex_unit is
 
             interrupt_timer              : in  STD_LOGIC;
             interrupt_external           : in  STD_LOGIC;
+            interrupt_software           : in  STD_LOGIC;
 
             intex_exception_raise        : out STD_LOGIC;
             intex_exception_cause        : out STD_LOGIC_VECTOR (31 downto 0);
@@ -110,6 +111,19 @@ begin
                         --  CAUSE_INSTR_PAGE_FAULT      when
                         --  CAUSE_LOAD_PAGE_FAULT       when
                         --  CAUSE_STORE_PAGE_FAULT      when
+
+                            CAUSE_M_INTERRUPT_EXTERNAL  when exec_m_ie = '1' and exec_m_eie = '1' and interrupt_external = '1' else
+                            CAUSE_M_INTERRUPT_TIMER     when exec_m_ie = '1' and exec_m_tie = '1' and interrupt_timer    = '1' else
+                            CAUSE_M_INTERRUPT_SOFTWARE  when exec_m_ie = '1' and exec_m_sie = '1' and interrupt_software = '1' else
+
+                        --  CAUSE_S_INTERRUPT_EXTERNAL  when
+                        --  CAUSE_S_INTERRUPT_SOFTWARE  when
+                        --  CAUSE_S_INTERRUPT_TIMER     when
+
+                        --  CAUSE_U_INTERRUPT_EXTERNAL  when
+                        --  CAUSE_U_INTERRUPT_SOFTWARE  when
+                        --  CAUSE_U_INTERRUPT_TIMER     when
+
                             (others => '0');
 
    intex_exception_cause <= cause_code;
