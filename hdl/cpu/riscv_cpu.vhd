@@ -288,6 +288,9 @@ architecture Behavioral of riscv_cpu is
             exec_except_store_misaligned : out std_logic;
             exec_except_store_access     : out std_logic;
 
+            exec_setting_mcause          : out std_logic;
+            exec_setting_mcause_value    : out std_logic_vector(31 downto 0);
+
             -- From the internal CSR Unit to the outside world
             -- Interupt enable
             exec_m_ie          : out STD_LOGIC;
@@ -315,17 +318,19 @@ architecture Behavioral of riscv_cpu is
     );
     end component;
 
-    signal exec_instr_completed : STD_LOGIC;
-    signal exec_instr_failed    : STD_LOGIC;
-    signal exec_flush_required  : STD_LOGIC;
-    signal exec_current_pc      : STD_LOGIC_VECTOR (31 downto 0);
-    signal exec_m_epc           : STD_LOGIC_VECTOR (31 downto 0);
+    signal exec_instr_completed      : STD_LOGIC;
+    signal exec_instr_failed         : STD_LOGIC;
+    signal exec_flush_required       : STD_LOGIC;
+    signal exec_current_pc           : STD_LOGIC_VECTOR (31 downto 0);
+    signal exec_m_epc                : STD_LOGIC_VECTOR (31 downto 0);
     signal exec_m_ie                 : STD_LOGIC;
     signal exec_m_eie                : STD_LOGIC;
     signal exec_m_tie                : STD_LOGIC;
     signal exec_m_sie                : STD_LOGIC;
     signal exec_m_tvec_base          : STD_LOGIC_VECTOR(31 downto 0);
     signal exec_m_tvec_flag          : STD_LOGIC;
+    signal exec_setting_mcause       : STD_LOGIC;
+    signal exec_setting_mcause_value : STD_LOGIC_VECTOR(31 downto 0);
 
     component intex_unit is
     Port (  clk                       : in  STD_LOGIC;
@@ -341,6 +346,9 @@ architecture Behavioral of riscv_cpu is
             intex_m_eip               : out STD_LOGIC;
             intex_m_tip               : out STD_LOGIC;
             intex_m_sip               : out STD_LOGIC;
+
+            exec_setting_mcause          : in  std_logic;
+            exec_setting_mcause_value    : in  std_logic_vector(31 downto 0);
 
             exec_except_instr_misaligned : in std_logic;
             exec_except_instr_access     : in std_logic;
@@ -475,6 +483,9 @@ decode: decode_unit port map (
 exec: exec_unit port map (
         clk                       => clk,
 
+        exec_setting_mcause       => exec_setting_mcause,
+        exec_setting_mcause_value => exec_setting_mcause_value,
+
         exec_m_ie                 => exec_m_ie,
         exec_m_eie                => exec_m_eie,
         exec_m_tie                => exec_m_tie,
@@ -567,6 +578,9 @@ i_intex_unit: intex_unit port map (
         interrupt_timer              => interrupt_timer,
         interrupt_external           => interrupt_external,
         interrupt_software           => interrupt_software,
+
+        exec_setting_mcause          => exec_setting_mcause,
+        exec_setting_mcause_value    => exec_setting_mcause_value,
 
         intex_exception_raise        => intex_exception_raise,
         intex_exception_cause        => intex_exception_cause,

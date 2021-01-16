@@ -101,6 +101,9 @@ entity exec_unit is
            exec_except_store_misaligned : out std_logic := '0';
            exec_except_store_access     : out std_logic := '0';
 
+           exec_setting_mcause          : out std_logic;
+           exec_setting_mcause_value    : out std_logic_vector(31 downto 0);
+
            -- Signals in / out of the CSR unit
            exec_m_ie         : out STD_LOGIC;
            exec_m_eie        : out STD_LOGIC;
@@ -358,8 +361,12 @@ begin
     --- This might be better off in the decoder...
     unknown_instr       <= right_instr and not(decode_alu_enable        or decode_csr_enable       or decode_shift_enable or
                                                decode_branchtest_enable or decode_loadstore_enable or decode_jump_enable);
+
+    -- Used by the interrupt controller to detect when interrupts are taken
+    exec_setting_mcause       <= decode_m_int_enter;
+    exec_setting_mcause_value <= decode_mcause;
     
-    -- Should the Program counter be advanced.
+     -- Should the Program counter be advanced.
     pc_completed        <= completed or decode_force_complete;
    
     -- Outputs going to the outside world 
@@ -404,7 +411,7 @@ i_csr_unit: csr_unit port map (
 
      m_cause_set  => decode_m_int_enter,
      m_cause      => decode_mcause,
-
+ 
      m_ie         => exec_m_ie,
 
      m_eie        => exec_m_eie,
