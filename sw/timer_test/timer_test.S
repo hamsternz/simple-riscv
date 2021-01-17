@@ -25,9 +25,9 @@ rollover: 	lw 	a0, timerl(t0)
 		lw	a2, timerl(t0)
 		bne 	a1, a0, rollover
 
-		# add 1000 to the current timer value
+		# add 5 to the current timer value - 5 microseconds
 		ori	a2, a0, 0
-  		addi	a0, a0, 1000
+  		addi	a0, a0, 5
 		bgt	a0, a2, nocarry
 		addi    a1, a1, 1
 nocarry: 	# store the new value in the timer compare register

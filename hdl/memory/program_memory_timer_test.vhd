@@ -68,7 +68,7 @@ architecture Behavioral of program_memory is
               9 => x"0002a603",
              10 => x"fea59ae3",
              11 => x"00056613",
-             12 => x"3e850513",
+             12 => x"00550513",
              13 => x"00a64463",
              14 => x"00158593",
              15 => x"00a2a423",
