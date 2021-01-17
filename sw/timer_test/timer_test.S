@@ -13,7 +13,7 @@ _start:
         .set timerl,    0x00
         .set timerh,	0x04
         .set timercmpl,	0x08
-        .set timercmph,	0x12
+        .set timercmph,	0x0C
 
 
 main: 		# Load the base of the timer peripheral
