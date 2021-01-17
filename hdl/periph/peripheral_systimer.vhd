@@ -46,7 +46,7 @@ entity peripheral_systimer is
          bus_write_data  : in  STD_LOGIC_VECTOR(31 downto 0);
          bus_read_data   : out STD_LOGIC_VECTOR(31 downto 0);
 
-         interrupt_timer : out STD_LOGIC);
+         interrupt_timer : out STD_LOGIC := '0');
 end entity;
 
 architecture Behavioral of peripheral_systimer is
@@ -123,16 +123,16 @@ begin
                         end if;
                     when "10" =>  
                         if bus_write_mask(0) = '1' then
-                            counter_cmp(39 downto 32)  <= unsigned(bus_write_data( 7 downto  0));
+                            counter_cmp( 7 downto  0)  <= unsigned(bus_write_data( 7 downto  0));
                         end if;
                         if bus_write_mask(1) = '1' then
-                            counter_cmp(47 downto 40)  <= unsigned(bus_write_data(15 downto  8));
+                            counter_cmp(15 downto  8)  <= unsigned(bus_write_data(15 downto  8));
                         end if;
                         if bus_write_mask(2) = '1' then
-                            counter_cmp(55 downto 48)  <= unsigned(bus_write_data(23 downto 16));
+                            counter_cmp(23 downto 16)  <= unsigned(bus_write_data(23 downto 16));
                         end if;
                         if bus_write_mask(3) = '1' then
-                            counter_cmp(63 downto 56)  <= unsigned(bus_write_data(31 downto 24));
+                            counter_cmp(31 downto 24)  <= unsigned(bus_write_data(31 downto 24));
                         end if;
                     when "11" =>  
                         if bus_write_mask(0) = '1' then

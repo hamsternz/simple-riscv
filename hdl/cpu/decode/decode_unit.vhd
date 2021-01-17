@@ -93,8 +93,8 @@ entity decode_unit is
             decode_result_src         : out STD_LOGIC_VECTOR(2 downto 0) := (others => '0');         
             decode_rdest              : out STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
 
-            decode_m_int_enter        : out STD_LOGIC;
-            decode_m_int_return       : out STD_LOGIC;
+            decode_m_int_enter        : out STD_LOGIC := '0';
+            decode_m_int_return       : out STD_LOGIC := '0';
             decode_mcause             : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
             decode_instr_misaligned   : out std_logic := '0';

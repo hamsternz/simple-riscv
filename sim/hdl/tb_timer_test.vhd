@@ -95,8 +95,8 @@ process
             when x"effffff8" =>
             when x"effffffC" =>
             when others =>
-                print("Unexpected address");
-                assert debug_pc = x"00000000" report "FAIL: Unexpected address" severity FAILURE;
+--                print("Unexpected address");
+--                assert debug_pc = x"00000000" report "FAIL: Unexpected address" severity FAILURE;
         end case;                        
     end process;
              

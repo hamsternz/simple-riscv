@@ -148,9 +148,9 @@ architecture Behavioral of csr_unit is
          csr_failed   : out STD_LOGIC;
          csr_value    : in  STD_LOGIC_VECTOR(31 downto 0);
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0);
-         m_eip        : in  STD_LOGIC;
-         m_tip        : in  STD_LOGIC;
-         m_sip        : in  STD_LOGIC
+         m_eie        : out STD_LOGIC;
+         m_tie        : out STD_LOGIC;
+         m_sie        : out STD_LOGIC
   );
   end component;
   signal csr_304_active        : std_logic := '0';
@@ -254,9 +254,9 @@ architecture Behavioral of csr_unit is
          csr_complete : out STD_LOGIC;
          csr_failed   : out STD_LOGIC;
          csr_result   : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-         m_eie        : out STD_LOGIC;
-         m_tie        : out STD_LOGIC;
-         m_sie        : out STD_LOGIC
+         m_eip        : in  STD_LOGIC;
+         m_tip        : in  STD_LOGIC;
+         m_sip        : in  STD_LOGIC
   );
   end component;
   signal csr_344_active        : std_logic := '0';
@@ -392,7 +392,7 @@ begin
 
    -- Merge back all the status and result signals
    local_csr_complete <= csr_F11_complete     OR csr_F12_complete     OR csr_F13_complete OR csr_F14_complete 
-                      OR csr_300_complete     OR csr_301_complete     OR csr_305_complete OR csr_305_complete
+                      OR csr_300_complete     OR csr_301_complete     OR csr_304_complete OR csr_305_complete
                       OR csr_340_complete     OR csr_341_complete     OR csr_342_complete OR csr_343_complete OR csr_344_complete
                       OR csr_C00_C80_complete OR csr_C01_C81_complete OR csr_C02_C82_complete
                       OR csr_rozero_complete  OR csr_other_complete;
@@ -583,9 +583,9 @@ i_csr_304: csr_304_mie port map (
     csr_complete => csr_304_complete,
     csr_failed   => csr_304_failed,
     csr_result   => csr_304_result,
-    m_eip        => m_eip,
-    m_tip        => m_tip,
-    m_sip        => m_sip
+    m_eie        => m_eie,
+    m_tie        => m_tie,
+    m_sie        => m_sie
   );
 
 i_csr_305: csr_305_mtvec port map ( 
@@ -655,9 +655,9 @@ i_csr_344: csr_344_mip   port map (
     csr_complete => csr_344_complete,
     csr_failed   => csr_344_failed,
     csr_result   => csr_344_result,
-    m_eie        => m_eie,
-    m_tie        => m_tie,
-    m_sie        => m_sie
+    m_eip        => m_eip,
+    m_tip        => m_tip,
+    m_sip        => m_sip
   );
 
 i_csr_C00_C80: csr_C00_C80_cycle port map ( 

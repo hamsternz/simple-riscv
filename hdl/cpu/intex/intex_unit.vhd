@@ -82,56 +82,11 @@ architecture Behavioral of intex_unit is
    signal exception_raise : STD_LOGIC;
    signal intr_vector     : STD_LOGIC_VECTOR (31 downto 0);
 
-   signal interrupt_timer_last     : STD_LOGIC := '0';
-   signal interrupt_external_last  : STD_LOGIC := '0';
-   signal interrupt_software_last  : STD_LOGIC := '0';
-   signal m_eip                    : STD_LOGIC := '0';
-   signal m_tip                    : STD_LOGIC := '0';
-   signal m_sip                    : STD_LOGIC := '0';
-
 begin
 
-   intex_m_eip <= m_eip;
-   intex_m_tip <= m_tip;
-   intex_m_sip <= m_sip;
-
-process(clk) 
-   begin
-      if rising_edge(clk) then
-         -- Clear pending for any interrupts being serviced
-         if exec_setting_mcause = '1' then
-            if exec_setting_mcause_value = CAUSE_M_INTERRUPT_EXTERNAL then
-               m_eip <= '0';
-            end if;
-
-            if exec_setting_mcause_value = CAUSE_M_INTERRUPT_TIMER then
-               m_tip <= '0';
-            end if;
-
-            if exec_setting_mcause_value = CAUSE_M_INTERRUPT_SOFTWARE then
-               m_sip <= '0';
-            end if;
-         end if;
-
-         -- Set pending for any new incoming interrupts
-         if interrupt_external_last = '0' and interrupt_external = '1' then
-            m_eip <= '1';
-         end if;
-
-         if interrupt_timer_last = '0' and interrupt_timer = '1' then
-            m_tip <= '1';
-         end if;
-
-         if interrupt_software_last = '0' and interrupt_software = '1' then
-            m_sip <= '1';
-         end if;
-
-         -- Remeber the state of the interrupt request signal
-         interrupt_external_last <= interrupt_external;
-         interrupt_timer_last    <= interrupt_timer;
-         interrupt_software_last <= interrupt_software;
-      end if;         
-   end process;
+   intex_m_eip <= interrupt_external;
+   intex_m_tip <= interrupt_timer;
+   intex_m_sip <= interrupt_software;
 
    exception_raise        <= reset 
                           OR exec_except_instr_misaligned
@@ -142,7 +97,11 @@ process(clk)
                           OR exec_except_load_misaligned
                           OR exec_except_load_access
                           OR exec_except_store_misaligned
-                          OR exec_except_store_access;
+                          OR exec_except_store_access
+                          OR (exec_m_ie and exec_m_eie and interrupt_external)
+                          OR (exec_m_ie and exec_m_tie and interrupt_timer)
+                          OR (exec_m_ie and exec_m_sie and interrupt_software);
+ 
    intex_exception_raise  <= exception_raise;
 
    -- Note - priority encoder
@@ -164,9 +123,9 @@ process(clk)
                          --  CAUSE_INSTR_PAGE_FAULT      when
                          --  CAUSE_LOAD_PAGE_FAULT       when
                          --  CAUSE_STORE_PAGE_FAULT      when
-                             CAUSE_M_INTERRUPT_EXTERNAL  when exec_m_ie = '1' and exec_m_eie = '1' and m_eip = '1' else
-                             CAUSE_M_INTERRUPT_TIMER     when exec_m_ie = '1' and exec_m_tie = '1' and m_tip = '1' else
-                             CAUSE_M_INTERRUPT_SOFTWARE  when exec_m_ie = '1' and exec_m_sie = '1' and m_sip = '1' else
+                             CAUSE_M_INTERRUPT_EXTERNAL  when exec_m_ie = '1' and exec_m_eie = '1' and interrupt_external = '1' else
+                             CAUSE_M_INTERRUPT_TIMER     when exec_m_ie = '1' and exec_m_tie = '1' and interrupt_timer    = '1' else
+                             CAUSE_M_INTERRUPT_SOFTWARE  when exec_m_ie = '1' and exec_m_sie = '1' and interrupt_software = '1' else
                          --  CAUSE_S_INTERRUPT_EXTERNAL  when
                          --  CAUSE_S_INTERRUPT_SOFTWARE  when
                          --  CAUSE_S_INTERRUPT_TIMER     when
@@ -176,9 +135,9 @@ process(clk)
                              (others => '0');
 
    -- Used only for intrerupt vectoring
-   intr_vector           <=  CAUSE_M_INTERRUPT_EXTERNAL(29 downto 0) & "00"  when exec_m_ie = '1' and exec_m_eie = '1' and m_eip = '1' else
-                             CAUSE_M_INTERRUPT_TIMER(29 downto 0)    & "00"  when exec_m_ie = '1' and exec_m_tie = '1' and m_tip = '1' else
-                             CAUSE_M_INTERRUPT_SOFTWARE(29 downto 0) & "00"  when exec_m_ie = '1' and exec_m_sie = '1' and m_sip = '1' else
+   intr_vector           <=  CAUSE_M_INTERRUPT_EXTERNAL(29 downto 0) & "00"  when exec_m_ie = '1' and exec_m_eie = '1' and interrupt_external = '1' else
+                             CAUSE_M_INTERRUPT_TIMER(29 downto 0)    & "00"  when exec_m_ie = '1' and exec_m_tie = '1' and interrupt_timer    = '1' else
+                             CAUSE_M_INTERRUPT_SOFTWARE(29 downto 0) & "00"  when exec_m_ie = '1' and exec_m_sie = '1' and interrupt_software = '1' else
                              (others => '0');
 
    intex_exception_cause  <= cause_code;
