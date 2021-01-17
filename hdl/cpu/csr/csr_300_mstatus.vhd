@@ -155,7 +155,7 @@ process(clk)
          if m_int_enter = '1' then
             mpp       <= priv_mode; -- Will always be CPU_PRIV_M
             mpie      <= mie;
-            mie       <= '1';
+            mie       <= '0';
          end if;
          if m_int_return = '1' then
             priv_mode <= mpp;
