@@ -48,7 +48,7 @@ read_vhdl ../../hdl/bus/bus_bridge.vhd
 read_vhdl ../../hdl/periph/peripheral_serial.vhd
 
 # sim specific stuff
-read_vhdl ../hdl/tb_top_level.vhd
+read_vhdl ../hdl/tb_isa_check.vhd
 
 save_project_as isa_check -force
 set_property top tb_top_level [get_fileset sim_1]
