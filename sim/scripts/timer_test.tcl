@@ -1,5 +1,5 @@
 # read all design files
-read_vhdl ../../hdl/systems/top_level.vhd
+read_vhdl ../../hdl/systems/top_level_expanded.vhd
 
 # The CPU design
 read_vhdl ../../hdl/cpu/cpu_constants.vhd
@@ -40,18 +40,20 @@ read_vhdl ../../hdl/cpu/csr/csr_readonly_zero.vhd
 read_vhdl ../../hdl/cpu/csr/csr_other.vhd
 
 # The Program ROM and RAM
-read_vhdl ../../hdl/memory/program_memory_isa_test.vhd
-read_vhdl ../../hdl/memory/ram_memory_isa_test.vhd
+read_vhdl ../../hdl/memory/program_memory_timer_test.vhd
+read_vhdl ../../hdl/memory/ram_memory_timer_test.vhd
 
 # The 'external' CPU bus - bridge, RAM and Serial peripherals
 read_vhdl ../../hdl/bus/bus_bridge.vhd
+read_vhdl ../../hdl/bus/bus_expander.vhd
+read_vhdl ../../hdl/periph/peripheral_systimer.vhd
 read_vhdl ../../hdl/periph/peripheral_serial.vhd
 
 # sim specific stuff
-read_vhdl ../hdl/tb_isa_check.vhd
+read_vhdl ../hdl/tb_timer_test.vhd
 
-save_project_as isa_check -force
-set_property top tb_isa_check [get_fileset sim_1]
+save_project_as timer_test -force
+set_property top tb_timer_test [get_fileset sim_1]
 launch_simulation -simset sim_1 -mode behavioral
 run 6us
 exit 0

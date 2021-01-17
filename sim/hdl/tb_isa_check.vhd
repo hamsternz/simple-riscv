@@ -1,5 +1,5 @@
 --###############################################################################
---# ./sim/tb_top_level.vhd  - DESCRIPTION_NEEDED
+--# ./sim/tb_isa_check.vhd  - Smoketest the standard instructions
 --#
 --# Part of the simple-riscv project. A simple three-stage RISC-V compatible CPU.
 --#
@@ -35,10 +35,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use STD.textio.all;
 
-entity tb_top_level is
-end tb_top_level;
+entity tb_isa_check is
+end tb_isa_check;
 
-architecture Behavioral of tb_top_level is
+architecture Behavioral of tb_isa_check is
 
     procedure print(str : in string) is
        variable oline : line;
