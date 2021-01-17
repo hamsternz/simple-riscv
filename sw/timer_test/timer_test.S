@@ -9,7 +9,7 @@ _start:
 	.text
 .global main
 
-	.set timerbase, 0xE0000000
+	.set timerbase, 0xE0000020
         .set timerl,    0x00
         .set timerh,	0x04
         .set timercmpl,	0x08
