@@ -124,7 +124,9 @@ architecture Behavioral of decode_unit is
     signal instr31 : STD_LOGIC_VECTOR(31 downto 0);
 
     -- Exception handling/Interrupts
-    signal raise_exception : STD_LOGIC;    
+    signal raise_exception : STD_LOGIC;  
+    signal launched_exception : std_logic := '0' ;
+  
 begin
 
    raise_exception <= reset or intex_exception_raise;
@@ -150,6 +152,7 @@ process(clk)
     begin
         if rising_edge(clk) then
             if exec_instr_completed = '1' OR exec_flush_required = '1' then
+                launched_exception        <= '0';
     
                 decode_instr_misaligned   <= fetch_instr_misaligned;
                 decode_instr_access       <= fetch_except_instr_access;
@@ -649,7 +652,8 @@ process(clk)
             -- instruction completes or is stalled on fetch
             if exec_instr_completed = '1' OR exec_flush_required = '1' OR exec_instr_failed = '1' or reset = '1' then
                 ---- Now override with exceptions, traps or interrupts
-                if raise_exception = '1' then
+                if raise_exception = '1' and launched_exception = '0' then
+                    launched_exception        <= '1';
                     decode_force_complete     <= '1';
                     decode_jump_enable        <= '1';
                     decode_alu_enable         <= '0';

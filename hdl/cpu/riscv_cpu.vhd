@@ -490,6 +490,7 @@ exec: exec_unit port map (
         exec_m_eie                => exec_m_eie,
         exec_m_tie                => exec_m_tie,
         exec_m_sie                => exec_m_sie,
+        exec_m_epc                => exec_m_epc,
         m_eip                     => intex_m_eip,
         m_tip                     => intex_m_tip,
         m_sip                     => intex_m_sip,
