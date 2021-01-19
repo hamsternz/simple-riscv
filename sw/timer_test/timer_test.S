@@ -1,5 +1,7 @@
 ###########################################################################
-		.set timerbase, 0xE0000020
+		.set gpio_value,     0xE0000010;
+		.set gpio_direction, 0xE0000014;
+		.set timerbase,      0xE0000020
 		.set timerl,    0x00
 		.set timerh,	0x04
 		.set timercmpl,	0x08
@@ -52,8 +54,16 @@ nocarry: 	# store the new value in the timer compare register, avoiding supuriou
 		li	t0, 0x8
 		csrrs	zero, mstatus, t0	# Enable mie
 		
-		
-forever:	j	forever
+		li	t0, gpio_direction
+		li	t1, gpio_value
+		la	a0, counter	
+ 		li	a1, 0xFFFF
+		sw	a1, 0(t0)
+		sw	a1, 0(t1)
+
+forever:	lw	a1, 0(a0)
+		sw	a1, 0(t1)
+		j	forever
 
 ###########################################################################
 ############# Interrupt handler ###########################################
@@ -78,8 +88,8 @@ i_rollover:	# copy timer count to a1:a0, allowing for rollover
 		lw	a1, timerh(t0)
 		bne 	a1, t1, i_rollover
 
-		# add 5 to the current timer value - 5 microseconds
-  		addi	a0, a0, 5
+		# add 5 to the current timer value - 500 microseconds
+  		addi	a0, a0, 500
 		bgtu	a0, a2, i_nocarry
 		addi    a1, a1, 1
 
@@ -90,6 +100,12 @@ i_nocarry: 	# store the new value in the timer compare register,
 		sw	a0, timercmpl(t0)
 		# copy timerh to timercmpl
 		sw	a1, timercmph(t0)
+
+		# Increment counter
+		la	a0, counter	
+		lw	a1, 0(a0)
+		addi	a1, a1, 1
+		sw	a1, 0(a0)	
 
 		# Restore registers
                 la	t0, save_t0		# use t0 as the base address
@@ -104,5 +120,5 @@ save_t0:	.word 	0
 save_t1:	.word 	0
 save_a0:	.word 	0
 save_a1:	.word 	0
-
+counter:	.word	0xFF
 		.end
