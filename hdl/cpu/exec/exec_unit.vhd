@@ -88,6 +88,7 @@ entity exec_unit is
            exec_instr_completed      : out STD_LOGIC                      := '0';
            exec_instr_failed         : out STD_LOGIC                      := '0';
            exec_flush_required       : out STD_LOGIC                      := '0';
+           exec_decode_next          : out STD_LOGIC                      := '0';
            exec_current_pc           : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
            -- For signalling exceptions
@@ -133,10 +134,13 @@ end exec_unit;
 architecture Behavioral of exec_unit is
     signal pc                : STD_LOGIC_VECTOR(31 downto 0);
     signal pc_plus_four      : STD_LOGIC_VECTOR(31 downto 0);
+
+    signal right_instr       : STD_LOGIC := '0';
+
     signal completed         : STD_LOGIC := '0';
+    signal failed            : STD_LOGIC := '0';
     signal unknown_instr     : STD_LOGIC := '0';
     signal pc_completed      : STD_LOGIC := '0';
-    signal right_instr       : STD_LOGIC := '0';
     
     component data_bus_mux_a is
     port ( bus_select     : in  STD_LOGIC_VECTOR( 0 downto 0);
@@ -358,22 +362,25 @@ begin
     completed           <= right_instr and (alu_complete        or csr_complete  or shift_complete or 
                                             branchtest_complete or jump_complete or loadstore_complete);
 
+    failed                <= unknown_instr or alu_failed        or csr_failed  or shift_failed
+                                           or branchtest_failed or jump_failed or loadstore_failed;
     --- This might be better off in the decoder...
     unknown_instr       <= right_instr and not(decode_alu_enable        or decode_csr_enable       or decode_shift_enable or
                                                decode_branchtest_enable or decode_loadstore_enable or decode_jump_enable);
+
+    exec_decode_next    <= completed or failed or unknown_instr or not right_instr;
 
     -- Used by the interrupt controller to detect when interrupts are taken
     exec_setting_mcause       <= decode_m_int_enter;
     exec_setting_mcause_value <= decode_mcause;
     
      -- Should the Program counter be advanced.
-    pc_completed        <= completed or decode_force_complete;
+    pc_completed         <= completed or decode_force_complete;
    
     -- Outputs going to the outside world 
     exec_current_pc       <= pc;
     exec_instr_completed  <= completed;
-    exec_instr_failed     <= unknown_instr or alu_failed        or csr_failed  or shift_failed
-                                           or branchtest_failed or jump_failed or loadstore_failed;
+    exec_instr_failed     <= failed;
     exec_flush_required   <= not right_instr;
     debug_pc              <= pc;
     

@@ -41,9 +41,7 @@ entity decode_unit is
             reset                     : in  STD_LOGIC;
 
             -- From the exec unit
-            exec_instr_completed      : in  STD_LOGIC;
-            exec_instr_failed         : in  STD_LOGIC;
-            exec_flush_required       : in  STD_LOGIC;
+            exec_decode_next          : in  STD_LOGIC;
             exec_m_epc                : in  STD_LOGIC_VECTOR(31 downto 0);
 
             -- From the interrupt/exception unit
@@ -151,7 +149,7 @@ begin
 process(clk)
     begin
         if rising_edge(clk) then
-            if exec_instr_completed = '1' OR exec_flush_required = '1' then
+            if exec_decode_next = '1' then
                 launched_exception        <= '0';
     
                 decode_instr_misaligned   <= fetch_instr_misaligned;
@@ -646,11 +644,7 @@ process(clk)
                    when others =>
                        -- Undecoded for opcodes                      
                 end case;
-            end if;
 
-            -- Other than reset, only raise an exception when an
-            -- instruction completes or is stalled on fetch
-            if exec_instr_completed = '1' OR exec_flush_required = '1' OR exec_instr_failed = '1' or reset = '1' then
                 ---- Now override with exceptions, traps or interrupts
                 if raise_exception = '1' and launched_exception = '0' then
                     launched_exception        <= '1';

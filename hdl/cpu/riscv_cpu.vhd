@@ -96,9 +96,7 @@ architecture Behavioral of riscv_cpu is
     component decode_unit is
     Port (  clk                   : in  STD_LOGIC;
            -- from the exec unit
-            exec_instr_completed      : in  STD_LOGIC;
-            exec_instr_failed         : in  STD_LOGIC;
-            exec_flush_required       : in  STD_LOGIC;
+            exec_decode_next          : in  STD_LOGIC;
             exec_m_epc                : in  STD_LOGIC_VECTOR (31 downto 0);
 
             -- To the exec unit
@@ -264,6 +262,7 @@ architecture Behavioral of riscv_cpu is
             decode_m_int_return       : in  STD_LOGIC;
             decode_mcause             : in  STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     
+            exec_decode_next          : out STD_LOGIC;
             exec_instr_completed      : out STD_LOGIC;
             exec_instr_failed         : out STD_LOGIC;
             exec_flush_required       : out STD_LOGIC;
@@ -321,6 +320,7 @@ architecture Behavioral of riscv_cpu is
     signal exec_instr_completed      : STD_LOGIC;
     signal exec_instr_failed         : STD_LOGIC;
     signal exec_flush_required       : STD_LOGIC;
+    signal exec_decode_next          : STD_LOGIC;
     signal exec_current_pc           : STD_LOGIC_VECTOR (31 downto 0);
     signal exec_m_epc                : STD_LOGIC_VECTOR (31 downto 0);
     signal exec_m_ie                 : STD_LOGIC;
@@ -421,9 +421,7 @@ decode: decode_unit port map (
         intex_exception_cause     => intex_exception_cause,
         intex_exception_vector    => intex_exception_vector,
 
-        exec_instr_completed      => exec_instr_completed,
-        exec_instr_failed         => exec_instr_failed,
-        exec_flush_required       => exec_flush_required,
+        exec_decode_next          => exec_decode_next,
         exec_m_epc                => exec_m_epc,
 
         -- From the fetch unit
@@ -547,6 +545,7 @@ exec: exec_unit port map (
         exec_instr_completed      => exec_instr_completed,
         exec_instr_failed         => exec_instr_failed,
         exec_flush_required       => exec_flush_required,
+        exec_decode_next          => exec_decode_next,
         exec_current_pc           => exec_current_pc,
 
         exec_except_instr_misaligned => exec_except_instr_misaligned,
