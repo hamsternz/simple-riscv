@@ -51,7 +51,7 @@ architecture Behavioral of ram_memory is
               1 => x"00000000",
               2 => x"00000000",
               3 => x"00000000",
-              4 => x"000000ff",
+              4 => x"00000000",
        others => (others=>'0'));
     signal data_valid : STD_LOGIC := '1';
 begin

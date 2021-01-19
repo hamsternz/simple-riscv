@@ -10,6 +10,7 @@ sim/scripts/isa_check.ip_user_files
 sim/scripts/isa_check.sim
 sim/scripts/isa_check.xpr
 sim/scripts/vivado*
+sim/scripts/timer_test*
 sw/crt0/basys3_serial
 sw/asm/isa_test
 sw/timer_test/timer_test

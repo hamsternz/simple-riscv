@@ -11,7 +11,7 @@
 		.section .init, "ax"
 		.global _start
 
-_start:		la gp, __global_pointer$
+_start:		li gp, 0x10000000
 		la sp, __stack_top
 		add s0, sp, zero
 		jal zero, main
@@ -56,7 +56,7 @@ nocarry: 	# store the new value in the timer compare register, avoiding supuriou
 		
 		li	t0, gpio_direction
 		li	t1, gpio_value
-		la	a0, counter	
+		li	a0, 0x10000010
  		li	a1, 0xFFFF
 		sw	a1, 0(t0)
 		sw	a1, 0(t1)
@@ -102,7 +102,7 @@ i_nocarry: 	# store the new value in the timer compare register,
 		sw	a1, timercmph(t0)
 
 		# Increment counter
-		la	a0, counter	
+		li	a0, 0x10000010
 		lw	a1, 0(a0)
 		addi	a1, a1, 1
 		sw	a1, 0(a0)	
@@ -120,5 +120,5 @@ save_t0:	.word 	0
 save_t1:	.word 	0
 save_a0:	.word 	0
 save_a1:	.word 	0
-counter:	.word	0xFF
+counter:	.word	0
 		.end
