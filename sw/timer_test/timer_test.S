@@ -58,14 +58,18 @@ forever:	j	forever
 ###########################################################################
 ############# Interrupt handler ###########################################
 ###########################################################################
-i_vector:	# Save registers on stack
-		addi sp, sp, -4*4
-		sw	t0, 0x04(sp)
-		sw	t1, 0x04(sp)
-		sw	a0, 0x08(sp)
-		sw	a1, 0x0C(sp)
+i_vector:	# Save registers  that will be touched
+                csrrw	zero, mscratch, t0	# Bounce t0 via mscratch
+                la	t0, save_t0		# use t0 as the base address
+		sw	t1, 0x04(t0)
+		sw	a0, 0x08(t0)
+		sw	a1, 0x0C(t0)
+                csrrw   t1, mscratch, zero
+		sw	t1, 0x00(t0)
 
-		# Setup for timer update
+                ###########################################################
+		# Setup for timer update, using registers t0, t1, a0 and a1
+                ###########################################################
 		la	t0, timerbase
 
 i_rollover:	# copy timer count to a1:a0, allowing for rollover
@@ -87,14 +91,18 @@ i_nocarry: 	# store the new value in the timer compare register,
 		# copy timerh to timercmpl
 		sw	a1, timercmph(t0)
 
-		# Restore registers and stack
-		lw	t0, 0x04(sp)
-		lw	t1, 0x04(sp)
-		lw	a0, 0x08(sp)
-		lw	a1, 0x0C(sp)
-		addi 	sp, sp, 4*4
+		# Restore registers
+                la	t0, save_t0		# use t0 as the base address
+		lw	a1, 0x0C(t0)
+		lw	a0, 0x08(t0)
+		lw	t1, 0x04(t0)
+		lw	t0, 0x00(t0)
 		mret
 
 		.data
-dummy:		.word 	0
+save_t0:	.word 	0
+save_t1:	.word 	0
+save_a0:	.word 	0
+save_a1:	.word 	0
+
 		.end

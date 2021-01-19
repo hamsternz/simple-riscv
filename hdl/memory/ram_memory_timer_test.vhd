@@ -48,6 +48,9 @@ architecture Behavioral of ram_memory is
     type a_memory is array (0 to 1023) of STD_LOGIC_VECTOR(31 downto 0);
     signal memory : a_memory := (
               0 => x"00000000",
+              1 => x"00000000",
+              2 => x"00000000",
+              3 => x"00000000",
        others => (others=>'0'));
     signal data_valid : STD_LOGIC := '1';
 begin
