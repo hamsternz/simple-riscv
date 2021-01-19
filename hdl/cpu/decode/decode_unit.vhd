@@ -38,7 +38,6 @@ use work.cpu_constants.ALL;
 
 entity decode_unit is
     Port (  clk                       : in  STD_LOGIC;
-            reset                     : in  STD_LOGIC;
 
             -- From the exec unit
             exec_decode_next          : in  STD_LOGIC;
@@ -122,12 +121,9 @@ architecture Behavioral of decode_unit is
     signal instr31 : STD_LOGIC_VECTOR(31 downto 0);
 
     -- Exception handling/Interrupts
-    signal raise_exception : STD_LOGIC;  
     signal launched_exception : std_logic := '0' ;
   
 begin
-
-   raise_exception <= reset or intex_exception_raise;
 
    with fetch_opcode(31) select instr31 <= x"FFFFFFFF" when '1', x"00000000" when others;
 
@@ -646,7 +642,7 @@ process(clk)
                 end case;
 
                 ---- Now override with exceptions, traps or interrupts
-                if raise_exception = '1' and launched_exception = '0' then
+                if intex_exception_raise = '1' and launched_exception = '0' then
                     launched_exception        <= '1';
                     decode_force_complete     <= '1';
                     decode_jump_enable        <= '1';
@@ -660,11 +656,7 @@ process(clk)
                     decode_pc_mode            <= PC_JMP_REG_RELATIVE;
                     decode_mcause             <= intex_exception_cause;
                     decode_m_int_enter        <= '1';
-                    if reset = '1'  then
-                        decode_pc_jump_offset <= x"F0000000";
-                    else
-                        decode_pc_jump_offset <= intex_exception_vector;
-                    end if;
+                    decode_pc_jump_offset     <= intex_exception_vector;
                 end if;
             end if;
         end if;

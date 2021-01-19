@@ -99,10 +99,6 @@ architecture Behavioral of riscv_cpu is
             exec_decode_next          : in  STD_LOGIC;
             exec_m_epc                : in  STD_LOGIC_VECTOR (31 downto 0);
 
-            -- To the exec unit
-            reset                     : in  STD_LOGIC;
-
-
             -- From the interrupt/exception unit
             intex_exception_raise     : in  STD_LOGIC;
             intex_exception_cause     : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -415,7 +411,6 @@ fetch: fetch_unit port map (
     
 decode: decode_unit port map (
         clk                       => clk,
-        reset                     => reset,
 
         intex_exception_raise     => intex_exception_raise,
         intex_exception_cause     => intex_exception_cause,

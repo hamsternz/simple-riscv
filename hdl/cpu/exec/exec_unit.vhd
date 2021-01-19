@@ -139,7 +139,7 @@ architecture Behavioral of exec_unit is
 
     signal completed         : STD_LOGIC := '0';
     signal failed            : STD_LOGIC := '0';
-    signal unknown_instr     : STD_LOGIC := '0';
+    signal known_instr       : STD_LOGIC := '0';
     signal pc_completed      : STD_LOGIC := '0';
     
     component data_bus_mux_a is
@@ -344,45 +344,47 @@ architecture Behavioral of exec_unit is
 
 begin
     -- Mapping internal exceptions to external ones
-    exec_except_illegal_instr    <= unknown_instr;
+    exec_except_illegal_instr    <= right_instr and not known_instr;
     exec_except_instr_misaligned <= right_instr and decode_instr_misaligned;
     exec_except_instr_access     <= right_instr and decode_instr_access;
     exec_except_ebreak           <= right_instr and decode_ebreak;
     exec_except_ecall            <= right_instr and decode_ecall;
 
     -- Managing the instrucion fetch misses
-    right_instr         <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
+    right_instr               <= '1' when std_logic_vector(pc) = decode_addr else '0'; 
 
-    alu_active          <= right_instr and decode_alu_enable;
-    csr_active          <= right_instr and decode_csr_enable;
-    shift_active        <= right_instr and decode_shift_enable;
-    branchtest_active   <= right_instr and decode_branchtest_enable;
-    loadstore_active    <= right_instr and decode_loadstore_enable;
-    jump_active         <= right_instr and decode_jump_enable;
-    completed           <= right_instr and (alu_complete        or csr_complete  or shift_complete or 
-                                            branchtest_complete or jump_complete or loadstore_complete);
+    alu_active                <= right_instr and decode_alu_enable;
+    csr_active                <= right_instr and decode_csr_enable;
+    shift_active              <= right_instr and decode_shift_enable;
+    branchtest_active         <= right_instr and decode_branchtest_enable;
+    loadstore_active          <= right_instr and decode_loadstore_enable;
+    jump_active               <= right_instr and decode_jump_enable;
 
-    failed                <= unknown_instr or alu_failed        or csr_failed  or shift_failed
-                                           or branchtest_failed or jump_failed or loadstore_failed;
-    --- This might be better off in the decoder...
-    unknown_instr       <= right_instr and not(decode_alu_enable        or decode_csr_enable       or decode_shift_enable or
-                                               decode_branchtest_enable or decode_loadstore_enable or decode_jump_enable);
+    known_instr               <= alu_active          or csr_active    or shift_active       or
+                                 branchtest_active   or jump_active   or loadstore_active;
 
-    exec_decode_next    <= completed or failed or unknown_instr or not right_instr;
+    completed                 <= alu_complete        or csr_complete  or shift_complete     or 
+                                 branchtest_complete or jump_complete or loadstore_complete;
+
+    failed                    <= (not known_instr)   or
+                                 alu_failed          or csr_failed    or shift_failed       or
+                                 branchtest_failed   or jump_failed   or loadstore_failed;
+
+    exec_decode_next          <= completed or failed or (not known_instr) or (not right_instr);
 
     -- Used by the interrupt controller to detect when interrupts are taken
     exec_setting_mcause       <= decode_m_int_enter;
     exec_setting_mcause_value <= decode_mcause;
     
      -- Should the Program counter be advanced.
-    pc_completed         <= completed or decode_force_complete;
+    pc_completed              <= completed or decode_force_complete;
    
     -- Outputs going to the outside world 
-    exec_current_pc       <= pc;
-    exec_instr_completed  <= completed;
-    exec_instr_failed     <= failed;
-    exec_flush_required   <= not right_instr;
-    debug_pc              <= pc;
+    exec_current_pc           <= pc;
+    exec_instr_completed      <= completed;
+    exec_instr_failed         <= failed;
+    exec_flush_required       <= not right_instr;
+    debug_pc                  <= pc;
     
 i_alu: alu port map (
      clk              => clk,
