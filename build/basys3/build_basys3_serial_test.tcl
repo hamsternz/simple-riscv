@@ -71,7 +71,7 @@ route_design
 write_checkpoint basys3_top_level_route.dcp -force
 
 # Write the bitstream	
-write_bitstream -force -file bitstreams/basys3_top_level.bit
+write_bitstream -force -file bitstreams/basys3_serial_test.bit
 
 # Generate reports
 report_timing -nworst 1
