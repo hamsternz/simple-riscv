@@ -43,8 +43,8 @@ read_vhdl ../../hdl/cpu/csr/csr_readonly_zero.vhd
 read_vhdl ../../hdl/cpu/csr/csr_other.vhd
 
 # The Program ROM and RAM
-read_vhdl ../../hdl/memory/program_memory_basys3_serial.vhd
-read_vhdl ../../hdl/memory/ram_memory_basys3_serial.vhd
+read_vhdl ../../hdl/memory/program_memory_serial_test.vhd
+read_vhdl ../../hdl/memory/ram_memory_serial_test.vhd
 
 # The 'external' CPU bus - bridge, RAM and Serial peripherals
 read_vhdl ../../hdl/bus/bus_bridge.vhd

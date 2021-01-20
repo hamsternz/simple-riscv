@@ -7,7 +7,7 @@ all : timer_test
 	rm timer_test.o
 
 timer_test : timer_test.o
-	/opt/riscv/bin/riscv32-unknown-linux-gnu-ld -T script.ld timer_test.o -o timer_test
+	/opt/riscv/bin/riscv32-unknown-linux-gnu-ld -T script.ld timer_test.o -o timer_test --no-relax
 
 dump: timer_test.o
 	/opt/riscv/bin/riscv32-unknown-linux-gnu-objdump -d  timer_test 

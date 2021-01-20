@@ -11,7 +11,7 @@
 		.section .init, "ax"
 		.global _start
 
-_start:		li gp, 0x10000000
+_start:		la gp, __global_pointer$
 		la sp, __stack_top
 		add s0, sp, zero
 		jal zero, main
