@@ -83,7 +83,14 @@ uut: top_level_expanded
              debug_data   => debug_data,
              debug_pc     => debug_pc,
              gpio         => gpio);
-             
+
+process
+    begin
+ 	wait for 4000 ns;
+        print("All tests complete");
+        wait;             
+    end process;
+
 process
     begin
         wait until rising_edge(clk);
