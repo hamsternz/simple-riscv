@@ -42,5 +42,5 @@ Currently you can run a a check of the basic functioning of the RV32I ISA:
 - Only a limited subset of CSRs are supported - look in hdl/cpu/csr for details.
 
 ## Known issues
-- Unaligned memory accesses are not yet supported, but do not cause an exception.
-- An I-cache is required, but current workaround is using dual-port memory.
+- Unaligned memory accesses are not yet supported, but do not cause an exception
+- An I-cache is required, but current workaround is using dual-port memory
