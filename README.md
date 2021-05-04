@@ -36,10 +36,10 @@ Currently you can run a a check of the basic functioning of the RV32I ISA:
 - Implements at > 100MHz on Artix-7
 
 ## Current features
-- RV32I instruction support
-- Most instructions are single cycle (except jumps due to pipeline flush and load/store due to memory stalls)
-- Software exceptions are well on the way to completed
-- Only a limited subset of CSRs are supported - look in hdl/cpu/csr for details
+- RV32I instruction support.
+- Most instructions are single cycle (except jumps due to pipeline flush and load/store due to memory stalls).
+- Software exceptions are well on the way to completed.
+- Only a limited subset of CSRs are supported - look in hdl/cpu/csr for details.
 
 ## Known issues
 - Unaligned memory accesses are not yet supported, but do not cause an exception.
